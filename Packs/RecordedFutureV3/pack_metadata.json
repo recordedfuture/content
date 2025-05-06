@@ -1,0 +1,26 @@
+{
+    "name": "Recorded Future V3",
+    "description": "New version of Recorded Future pack",
+    "support": "partner",
+    "currentVersion": "1.0.0",
+    "author": "Recorded Future",
+    "url": "https://support.recordedfuture.com/",
+    "email": "",
+    "categories": [
+        "Analytics & SIEM"
+    ],
+    "tags": [
+        "tag1",
+        "tag2"
+    ],
+    "useCases": [],
+    "keywords": [],
+    "marketplaces": [
+        "xsoar",
+        "marketplacev2"
+    ],
+    "devEmail": [
+        "dmytro.branitskyi__contractor@recordedfuture.com"
+    ],
+    "githubUser": []
+}

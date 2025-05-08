@@ -121,6 +121,25 @@ class Client(BaseClient):
             timeout=120,
         )
 
+    def get_modified_remote_data(self, updated_at_gte) -> dict[str, Any]:
+        """Fetches list of IDs of updated incidents."""
+        # TODO implement
+        return self._post(
+            url_suffix="/v3/alert/fetch-updated-ids",
+            json_data={
+                "integration_config": demisto.params(),
+                "updated_at_gte": updated_at_gte,
+            },
+            timeout=120
+        )
+
+    def get_remote_data(self, alert_id: str, last_update: str) -> dict[str, Any]:
+        """Fetch incidents."""
+        return self._get(
+            url_suffix="/v3/alert/" + alert_id + "?last_update=" + last_update,
+            timeout=120
+        )
+
 
 # === === === === === === === === === === === === === === ===
 # === === === === === === ACTIONS === === === === === === ===
@@ -136,11 +155,15 @@ class Actions:
         alerts = response.get("alerts", [])
         next_query = response.get("next_query", {})
 
+        for alert in alerts:
+            # TODO: add mirroring direction to integration settings?
+            alert['mirroring_direction'] = 'In'
+            alert['mirroring_instance'] = demisto.integrationInstance()
+
         incidents = [
             {
                 "name": alert.get("title"),
                 "occurred": alert.get("created"),
-                "dbotMirrorId": alert.get("id"),
                 "rawJSON": json.dumps(alert),
             }
             for alert in alerts
@@ -160,6 +183,38 @@ class Actions:
     def get_alert_rules_command(self) -> dict[str, Any]:
         """Get Alert Rules Command."""
         return self.client.get_alert_rules()
+
+    def get_modified_remote_data(self, args):
+        demisto.info("get_modified_remote_data, args: " + str(args))
+        remote_args = GetModifiedRemoteDataArgs(args)
+        last_update = remote_args.last_update
+        last_update_utc = dateparser.parse(last_update, settings={'TIMEZONE': 'UTC'})  # converts to a UTC timestamp
+        last_update_utc = last_update_utc.isoformat()
+
+        response = self.client.get_modified_remote_data(updated_at_gte=last_update_utc)
+        modified_incident_ids = response.get("modified_incident_ids", [])
+        demisto.info("get_modified_remote_data, got " + str(len(modified_incident_ids)) + " incidents")
+        result = GetModifiedRemoteDataResponse(modified_incident_ids)
+        demisto.info("get_modified_remote_data, returning incident IDs " + str(modified_incident_ids))
+        return_results(result)
+
+    def get_remote_data(self, args):
+        demisto.info("get_remote_data, args: " + str(args))
+        parsed_args = GetRemoteDataArgs(args)
+        try:
+            remote_data: Dict = self.client.get_remote_data(parsed_args.remote_incident_id, parsed_args.last_update)
+            mirrored_object = remote_data["mirrored_object"]
+            entries = remote_data["entries"]
+            result = GetRemoteDataResponse(mirrored_object, entries)
+            demisto.info("get_remote_data, returning " + str(mirrored_object) + ", " + str(entries))
+            return_results(result)
+        except Exception as e:
+            demisto.error("get_remote_data, error: " + str(e))
+            # TODO: modify this, to see if we want to use it
+            if "Rate limit exceeded" in str(e):
+                return_error("API rate limit")
+
+
 
     @staticmethod
     def _get_file_name_from_image_id(image_id: str) -> str:
@@ -333,6 +388,14 @@ def main():
 
         elif command == "fetch-incidents":
             actions.fetch_incidents()
+
+        elif command == "get-modified-remote-data":
+            demisto.info("main get-modified-remote-data")
+            actions.get_modified_remote_data(demisto.args())
+
+        elif command == "get-remote-data":
+            demisto.info("main get-remote-data")
+            actions.get_remote_data(demisto.args())
 
         elif command == "recordedfuture-alert-rules":
             return_results(actions.get_alert_rules_command())

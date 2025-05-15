@@ -112,13 +112,16 @@ class Client(BaseClient):
 
     def fetch_incidents(self) -> dict[str, Any]:
         """Fetch incidents."""
+        classic_query_params = demisto.getLastRun().get("next_query_classic", {})
+        playbook_query_params = demisto.getLastRun().get("next_query_playbook", {})
         return self._post(
             url_suffix="/v3/alert/fetch",
             json_data={
                 "integration_config": demisto.params(),
-                "query_params": demisto.getLastRun(),
+                "classic_query_params": classic_query_params,
+                "playbook_query_params": playbook_query_params
             },
-            timeout=120,
+            timeout=120
         )
 
 
@@ -134,7 +137,12 @@ class Actions:
     def fetch_incidents(self) -> None:
         response = self.client.fetch_incidents()
         alerts = response.get("alerts", [])
-        next_query = response.get("next_query", {})
+        next_query_classic = response.get("next_query_classic", {})
+        next_query_playbook = response.get("next_query_playbook", {})
+        next_query = {
+            "next_query_classic": next_query_classic,
+            "next_query_playbook": next_query_playbook
+        }
 
         incidents = [
             {

@@ -14,10 +14,11 @@ https://github.com/demisto/content/blob/master/Packs/HelloWorld/Integrations/Hel
 
 """
 
+import platform
+import urllib3
 from typing import Any
 
 import demistomock as demisto
-import urllib3
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
 from CommonServerUserPython import *  # noqa
 
@@ -29,6 +30,14 @@ urllib3.disable_warnings()
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"  # ISO8601 format with UTC, default in XSOAR
 
 MAX_IMAGES_TO_FETCH = 25
+
+STATUS_TO_RETRY = [500, 501, 502, 503, 504]
+
+__version__ = "0.1.0"
+
+TIMEOUT_60 = 60
+TIMEOUT_90 = 90
+TIMEOUT_120 = 120
 
 """ CLIENT CLASS """
 
@@ -157,10 +166,6 @@ class Actions:
         demisto.incidents(incidents)
         demisto.setLastRun(next_query)
 
-        # update_alert_status = response.pop("alerts_update_data", None)
-        # if update_alert_status:
-        #    self.client.alert_set_status(update_alert_status)
-
     def get_alerts_command(self) -> dict[str, Any]:
         """Get Alerts Command."""
         return self.client.get_alerts()
@@ -173,7 +178,7 @@ class Actions:
     def _get_file_name_from_image_id(image_id: str) -> str:
         return f"{image_id.replace('img:', '')}.png"
 
-    def _get_image_and_create_attachment(self, alert_type: str, alert_id: str, image_id: str) -> dict | None:
+    def _get_image_and_create_attachment(self, alert_type: str, alert_id: str, image_id: str) -> Optional[dict]:
         try:
             return_results(f"Trying to fetch {image_id=}")
             image_content = self.client.get_alert_image(alert_type, alert_id, image_id)
@@ -295,7 +300,7 @@ def get_client():
     verify_ssl = not demisto_params.get("insecure", False)
     proxy = demisto_params.get("proxy", False)
 
-    api_token = demisto_params.get("api_token", {}).get("password") or demisto_params.get("token")
+    api_token = demisto_params.get("apikey")
     if not api_token:
         return_error("Please provide a valid API token")
 
@@ -345,7 +350,7 @@ def main():
         elif command == "recordedfuture-alert-rules":
             return_results(actions.get_alert_rules_command())
 
-        elif command == "recordedfuture-alert-search":
+        elif command == "recordedfuture-alerts":
             return_results(actions.get_alerts_command())
 
         elif command == "recordedfuture-alert-images":

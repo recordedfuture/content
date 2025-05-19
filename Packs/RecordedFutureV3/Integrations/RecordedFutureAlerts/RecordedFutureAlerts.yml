@@ -3,7 +3,7 @@ commonfields:
   id: RecordedFutureAlerts
   version: -1
 configuration:
-- defaultvalue: https://example.com/
+- defaultvalue: https://api.recordedfuture.com/gw/xsoar/
   display: Your server URL
   name: url
   required: true
@@ -21,33 +21,276 @@ configuration:
   name: proxy
   required: false
   type: 8
+
+- display: Fetch incidents
+  name: isFetch
+  type: 8
+  required: false
+  section: Collect
+
+- display: Incidents Fetch Interval
+  defaultvalue: '1'
+  name: incidentFetchInterval
+  type: 19
+  required: false
+  section: Collect
+
+
+- display: 'First Incidient Fetch: Time Range'
+  additionalinfo: 'Limit incidents to include in the first fetch by time range. Input format: "N", where N is number of minutes. E.g., input "7200" to fetch all incidents created in the last 5 days (5d*24h*60m=7200m).'
+  defaultvalue: '1440'
+  name: first_fetch
+  type: 0
+  required: false
+  section: Collect
+
+- display: Maximum number of incidents per fetch
+  name: max_fetch
+  defaultvalue: "50"
+  type: 0
+  required: false
+  section: Collect
+
+- display: Incident type
+  name: incidentType
+  defaultvalue: "Recorded Future Alert"
+  type: 13
+  required: false
+  section: Collect
+
+- name: integrationReliability
+  display: 'Source Reliability'
+  defaultvalue: B - Usually reliable
+  options:
+  - A+ - 3rd party enrichment
+  - A - Completely reliable
+  - B - Usually reliable
+  - C - Fairly reliable
+  - D - Not usually reliable
+  - E - Unreliable
+  - F - Reliability cannot be judged
+  type: 15
+  required: false
+  additionalinfo: Reliability of the source providing the intelligence data.
+  section: Collect
+- display: ''
+  name: feedExpirationPolicy
+  defaultvalue: "indicatorType"
+  type: 17
+  required: false
+  section: Collect
+  options:
+  - never
+  - interval
+  - indicatorType
+  - suddenDeath
+- display: Feed Expiration Interval
+  name: feedExpirationInterval
+  defaultvalue: '20160'
+  type: 1
+  required: false
+  section: Collect
+
+
+
+- display: 'Classic Alerts: Rule names to fetch alerts by'
+  name: alert_rules
+  type: 12
+  additionalinfo: 'Rule names to fetch alerts by, separated by semicolon. If empty, all alerts will be fetched.'
+  required: false
+
+- display: 'Classic Alerts: Fetched Statuses'
+  name: alert_statuses
+  type: 16
+  defaultvalue: New,Pending
+  options:
+  - New
+  - Resolved
+  - Dismissed
+  - Pending
+  - Flag for Tuning
+  required: false
+  section: Collect
+
+
+- display: 'Playbook Alerts: Fetched Categories'
+  name: pba_categories
+  additionalinfo: 'Some listed Playbook alert Categories might be unavailable due to limitations in the current Recorded Future subscription'
+  type: 16
+  defaultvalue: domain_abuse,vulnerability,code_repo_leakage,third_party_risk
+  options:
+#  - all_available
+  - domain_abuse
+  - vulnerability
+  - code_repo_leakage
+  - third_party_risk
+  required: false
+  section: Collect
+
+- display: 'PBA Alerts: Fetched Statuses'
+  name: pba_statuses
+  type: 16
+  defaultvalue: New,InProgress
+  options:
+  - New
+  - Resolved
+  - Dismissed
+  - InProgress
+  required: false
+  section: Collect
+
+
+
+#- display: 'Playbook Alerts: Fetched Priorities Threshold'
+#  name: pa_priorities
+#  type: 15
+#  additionalinfo: 'Returns alerts with this selected priority or higher. High > Moderate > Informational'
+#  defaultvalue: Moderate
+#  options:
+#  - High
+#  - Moderate
+#  - Informational
+#  required: false
+#  section: Collect
+
+- display: Incident type
+  name: incidentType
+  defaultvalue: Recorded Future Playbook Alert
+  type: 13
+  required: false
+  section: Collect
+
 description: '[Enter a comprehensive, yet concise, description of what the integration does, what use cases it is designed for, etc.]'
 display: RecordedFutureAlerts
 name: RecordedFutureAlerts
 script:
   commands:
-  - arguments:
-    - default: false
-      description: '[Enter a description of the argument, including any important information users need to know, for example, default values.]'
-      isArray: false
-      name: dummy
-      required: true
-      secret: false
-    - default: false
-      description: '[Enter a description of the argument, including any important information users need to know, for example, default values.]'
-      isArray: false
-      name: dummy2
-      required: false
-      secret: false
-    deprecated: false
-    description: '[Enter a description of the command, including any important information users need to know, for example required permissions.]'
-    execution: false
-    name: baseintegration-dummy
-    outputs:
-    - contextPath: BaseIntegration.Output
-      description: '[Enter a description of the data returned in this output.]'
-      type: String
-  isfetch: false
+    - name: recordedfuture-alert-images
+      description: Fetch alert images.
+      arguments:
+      outputs:
+        - contextPath: RecordedFuture.attachment
+          description: "Fetch new alert images."
+          type: Unknown
+
+    - name: recordedfuture-alert-rules
+      description: Search for alert rule IDs.
+      arguments:
+        - name: rule_name
+          description: Rule name to search. Can be a partial name.
+        - name: limit
+          description: 'Maximum number of rules to return. Default is 10.'
+          defaultValue: "10"
+      outputs:
+        - contextPath: RecordedFuture.AlertRule.id
+          description: Alert rule ID.
+          type: string
+        - contextPath: RecordedFuture.AlertRule.name
+          description: Alert rule name.
+          type: string
+
+#    - name: recordedfuture-alerts
+#      description: Gets details on alerts configured and generated by Recorded Future by alert rule ID and/or time range.
+#      arguments:
+#      - name: rule_id
+#        description: Alert rule ID.
+#      - name: limit
+#        description: Maximum number of alerts to return. Default is 10.
+#        defaultValue: "10"
+#      - name: triggered_time
+#        description: 'Alert triggered time, e.g., "1 hour" or "2 days".'
+#      - name: assignee
+#        description: 'Alert assignee''s email address.'
+#      - name: status
+#        auto: PREDEFINED
+#        predefined:
+#        - unassigned
+#        - assigned
+#        - pending
+#        - actionable
+#        - no-action
+#        - tuning
+#        description: 'Alert review status. Can be "unassigned", "assigned", "pending", "actionable", "no-action", or "tuning".'
+#      - name: freetext
+#        description: Free text search.
+#      - name: offset
+#        description: Alerts from offset.
+#      - name: orderby
+#        auto: PREDEFINED
+#        predefined:
+#        - triggered
+#        description: Alerts sort order.
+#      - name: direction
+#        auto: PREDEFINED
+#        predefined:
+#        - asc
+#        - desc
+#        description: The direction by which to sort alerts. Can be "asc" or "desc".
+#      outputs:
+##        - TODO: this needs to be updated to the new common alert schema
+#      - contextPath: RecordedFuture.Alert.id
+#        description: Alert ID.
+#        type: string
+#      - contextPath: RecordedFuture.Alert.name
+#        description: Alert name.
+#        type: string
+#      - contextPath: RecordedFuture.Alert.type
+#        description: Alert type.
+#        type: string
+#      - contextPath: RecordedFuture.Alert.triggered
+#        description: Alert triggered time.
+#        type: date
+#      - contextPath: RecordedFuture.Alert.status
+#        description: Alert status.
+#        type: string
+#      - contextPath: RecordedFuture.Alert.assignee
+#        description: Alert assignee.
+#        type: string
+#      - contextPath: RecordedFuture.Alert.rule
+#        description: Alert rule name.
+#        type: string
+
+#    - name: recordedfuture-playbook-alert-update
+#      description: Update the status of one or multiple Playbook alerts.
+#      arguments:
+#        - name: alert_ids
+#          required: true
+#          description: Ids of the playbook alerts that will be updated.
+#        - name: new_status
+#          description: New status to set for all alerts in alert_ids.
+#          required: true
+#          auto: PREDEFINED
+#          predefined:
+#            - new
+#            - in-progress
+#            - dismissed
+#            - resolved
+#        - name: comment
+#          description: Add comment to all alerts in alert_ids.
+#          required: false
+#        - name: reopen
+#          description: 'Set the reopen strategy for the alert. Reopen on significant updates or keep the alert Resolved. Default: reopen on significant updates. Can only be used with new_status=resolved.'
+#          required: false
+#          auto: PREDEFINED
+#          predefined:
+#            - never
+#            - significant_updates
+#      outputs:
+#        - contextPath: RecordedFuture.PlaybookAlerts.playbook_alert_id
+#          description: Unique id of the playbook alert in Recorded Future.
+#          type: string
+#        - contextPath: RecordedFuture.PlaybookAlerts.current_status
+#          description: Current status of playbook alert in Recorded Future.
+#          type: string
+#        - contextPath: RecordedFuture.PlaybookAlerts.title
+#          description: Title of the playbook alert in Recorded Future.
+#          type: string
+#        - contextPath: RecordedFuture.PlaybookAlerts.status_message
+#          description: Message describing the outcome of the update.
+#          type: string
+#
+
+  isfetch: true
   runonce: false
   script: '-'
   type: python

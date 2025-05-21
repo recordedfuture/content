@@ -78,13 +78,13 @@ configuration:
   section: Collect
 
 - display: 'Classic Alerts: Rule names to fetch'
-  name: alert_rules
+  name: classic_alert_rules
   type: 12
   additionalinfo: 'Rule names to fetch alerts by, separated by semicolon. If empty, all alerts will be fetched.'
   required: false
 
 - display: 'Classic Alerts: Statuses to fetch'
-  name: alert_statuses
+  name: classic_alert_statuses
   type: 16
   defaultvalue: New
   options:
@@ -131,7 +131,7 @@ configuration:
 - display: 'Playbook Alerts: Statuses to fetch'
   name: playbook_alert_statuses
   type: 16
-  defaultvalue: New,InProgress
+  defaultvalue: New
   options:
   - New
   - Resolved

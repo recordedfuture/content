@@ -150,8 +150,8 @@ configuration:
   required: false
   type: 8
 
-description: '[Enter a comprehensive, yet concise, description of what the integration does, what use cases it is designed for, etc.]'
-display: RecordedFutureAlerts
+description: 'Fetch and triage alerts from Recorded Future'
+display: Recorded Future Alerts
 name: RecordedFutureAlerts
 script:
   commands:

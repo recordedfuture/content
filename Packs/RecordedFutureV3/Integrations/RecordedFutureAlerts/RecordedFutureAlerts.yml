@@ -74,7 +74,7 @@ configuration:
   name: classic_alerts_enabled
   type: 8
   defaultvalue: true
-  required: true
+  required: false
   section: Collect
 
 - display: 'Classic Alerts: Rule names to fetch'
@@ -86,7 +86,7 @@ configuration:
 - display: 'Classic Alerts: Statuses to fetch'
   name: alert_statuses
   type: 16
-  defaultvalue: New,InProgress
+  defaultvalue: New
   options:
   - New
   - Resolved
@@ -100,10 +100,10 @@ configuration:
   name: playbook_alerts_enabled
   type: 8
   defaultvalue: true
-  required: true
+  required: false
   section: Collect
 
-- display: 'Playbook Alerts: Priority'
+- display: 'Playbook Alerts: Priority to fetch'
   name: playbook_alert_priority
   type: 15
   defaultvalue: Moderate
@@ -112,11 +112,11 @@ configuration:
     - Informational
     - Moderate
     - High
-#  required: true
+  required: false
   section: Collect
 
 - display: 'Playbook Alerts: Categories to fetch'
-  name: pba_categories
+  name: playbook_alert_categories
   additionalinfo: 'Playbook Alert categories to filter by. If empty, all alerts will be fetched. Note that your Recorded Future licensing also affects which Playbook Alerts are available.'
   type: 16
   defaultvalue: ''
@@ -129,7 +129,7 @@ configuration:
   section: Collect
 
 - display: 'Playbook Alerts: Statuses to fetch'
-  name: pba_statuses
+  name: playbook_alert_statuses
   type: 16
   defaultvalue: New,InProgress
   options:

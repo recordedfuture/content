@@ -122,9 +122,10 @@ configuration:
   defaultvalue: ''
   options:
   - domain_abuse
-  - vulnerability
+  - cyber_vulnerability
   - code_repo_leakage
   - third_party_risk
+  - geopolitics_facility
   required: false
   section: Collect
 

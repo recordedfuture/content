@@ -1,0 +1,112 @@
+id: Recorded Future PBA Image Fetching
+version: -1
+name: Recorded Future PBA Image Fetching
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 6144934c-1385-4300-847d-2f5d9d1112d2
+    type: start
+    task:
+      id: 6144934c-1385-4300-847d-2f5d9d1112d2
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+      description: ''
+    nexttasks:
+      '#none#':
+      - "1"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 730,
+          "y": 40
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 13787238-75d6-4cb0-8c9d-cd9c46555c90
+    type: regular
+    task:
+      id: 13787238-75d6-4cb0-8c9d-cd9c46555c90
+      version: -1
+      name: recordedfuture-alert-images
+      script: Recorded Future Alerts|||recordedfuture-alert-images
+      type: regular
+      iscommand: true
+      brand: Recorded Future Alerts
+    nexttasks:
+      '#none#':
+      - "2"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 730,
+          "y": 220
+        }
+      }
+    note: true
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 6edaf975-161f-4174-889e-03c901579aaf
+    type: title
+    task:
+      id: 6edaf975-161f-4174-889e-03c901579aaf
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+      description: ''
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 730,
+          "y": 430
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 455,
+        "width": 380,
+        "x": 730,
+        "y": 40
+      }
+    }
+  }
+inputs: []
+outputs: []
+tests:
+- No tests (auto formatted)
+fromversion: 6.10.0
+description: Description for playbook

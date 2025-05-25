@@ -17,6 +17,7 @@ https://github.com/demisto/content/blob/master/Packs/HelloWorld/Integrations/Hel
 import platform
 import urllib3
 from typing import Any
+import concurrent.futures
 
 import demistomock as demisto
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
@@ -101,7 +102,7 @@ class Client(BaseClient):
         """Get alert rules."""
         return self._get(url_suffix="/v3/alert/rules")
 
-    def get_alert_image(self, alert_type: str, alert_id: str, image_id: str) -> bytes:
+    def get_alert_image(self, alert_type: str, alert_id: str, image_id: str, alert_sub_type: Optional[str]) -> bytes:
         """
         Get an image from the v3 alert image endpoint.
         Returns the raw binary content of the image.
@@ -111,6 +112,7 @@ class Client(BaseClient):
             url_suffix="/v3/alert/image",
             params={
                 "alert_type": alert_type,
+                "alert_sub_type": alert_sub_type,
                 "alert_id": alert_id,
                 "image_id": image_id,
             },
@@ -145,6 +147,10 @@ class Actions:
 
     def fetch_incidents(self) -> None:
         response = self.client.fetch_incidents()
+        if isinstance(response, CommandResults):
+            # 404.
+            return_error("404 in fetch incidents")
+            return []
         alerts = response.get("alerts", [])
         next_query_classic = response.get("next_query_classic", {})
         next_query_playbook = response.get("next_query_playbook", {})
@@ -178,10 +184,17 @@ class Actions:
     def _get_file_name_from_image_id(image_id: str) -> str:
         return f"{image_id.replace('img:', '')}.png"
 
-    def _get_image_and_create_attachment(self, alert_type: str, alert_id: str, image_id: str) -> Optional[dict]:
+    def _get_image_and_create_attachment(
+            self, alert_type: str, alert_id: str, image_id: str, alert_sub_type: Optional[str]
+    ) -> Optional[dict]:
         try:
             return_results(f"Trying to fetch {image_id=}")
-            image_content = self.client.get_alert_image(alert_type, alert_id, image_id)
+            image_content = self.client.get_alert_image(
+                alert_type=alert_type,
+                alert_id=alert_id,
+                image_id=image_id,
+                alert_sub_type=alert_sub_type,
+            )
             file_name = self._get_file_name_from_image_id(image_id)
             file_result_obj = fileResult(file_name, image_content)
             demisto.results(file_result_obj)  # Important
@@ -196,6 +209,13 @@ class Actions:
             demisto.error(f"Failed to fetch image {image_id}: {str(e)}")
             return None
 
+    @staticmethod
+    def search_label(labels: dict[str, Any], name: str) -> Optional[str]:
+        for label in labels:
+            if label.get("type") == name:
+                return label.get("value")
+        return None
+
     def get_alert_images_command(self) -> list:
         incident = demisto.incident()
         return_results(f"{incident=}")
@@ -203,15 +223,16 @@ class Actions:
         return_results(f"{labels=}")
 
         # alert_type = incident.get("type")  # "_Recorded Future Classic Alert"
-        alert_type = None  # "classic-alert"
-        for label in labels:
-            if label.get("type") == "type":
-                alert_type = label.get("value")
-                break
-        else:
+        alert_type = self.search_label(labels, "type")
+        # "classic-alert" or "playbook-alert"
+        if not alert_type:
             return_error("Failed to get alert_type from incident labels.")
 
+        alert_sub_type = self.search_label(labels, "subtype")
+
         alert_id = incident.get("alertid")
+        if not alert_id:
+            alert_id = self.search_label(labels, "id")
         if not alert_id:
             return_error("Failed to get alert id from incident.")
 
@@ -244,7 +265,7 @@ class Actions:
         return_results(f"{existing_file_names=}")
 
         # Determine missing image IDs.
-        missing_image_ids = {}
+        missing_image_ids = set()
         for img_id in image_ids:
             # Limit to only 25 images.
             if len(missing_image_ids) >= MAX_IMAGES_TO_FETCH:
@@ -267,9 +288,10 @@ class Actions:
             for img_id in missing_image_ids:
                 future = executor.submit(
                     self._get_image_and_create_attachment,
-                    alert_type,
-                    alert_id,
-                    img_id,
+                    alert_type=alert_type,
+                    alert_id=alert_id,
+                    image_id=img_id,
+                    alert_sub_type=alert_sub_type,
                 )
                 futures[future] = img_id
 

@@ -188,13 +188,14 @@ class Actions:
             self, alert_type: str, alert_id: str, image_id: str, alert_sub_type: Optional[str]
     ) -> Optional[dict]:
         try:
-            return_results(f"Trying to fetch {image_id=}")
+            return_results(f"Trying to fetch {image_id=} ({alert_type=} {alert_sub_type=} {alert_id=})")
             image_content = self.client.get_alert_image(
                 alert_type=alert_type,
                 alert_id=alert_id,
                 image_id=image_id,
                 alert_sub_type=alert_sub_type,
             )
+            return_results(f"Fetched {image_id=} ({alert_type=} {alert_sub_type=} {alert_id=}): {image_content[:50]} (truncated)")
             file_name = self._get_file_name_from_image_id(image_id)
             file_result_obj = fileResult(file_name, image_content)
             demisto.results(file_result_obj)  # Important

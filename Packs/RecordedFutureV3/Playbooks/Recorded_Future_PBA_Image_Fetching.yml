@@ -1,6 +1,6 @@
-id: Recorded Future PBA Image Fetching
+id: Recorded Future Alert Image Fetching
 version: -1
-name: Recorded Future PBA Image Fetching
+name: Recorded Future Alert Image Fetching
 starttaskid: "0"
 tasks:
   "0":

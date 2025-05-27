@@ -40,11 +40,11 @@ tasks:
     task:
       id: 13787238-75d6-4cb0-8c9d-cd9c46555c90
       version: -1
-      name: rf-alert-images
-      script: Recorded Future Alerts|||rf-alert-images
+      name: Fetch images for alert
+      script: '|||rf-alert-images'
       type: regular
       iscommand: true
-      brand: Recorded Future Alerts
+      brand: ""
     nexttasks:
       '#none#':
       - "2"

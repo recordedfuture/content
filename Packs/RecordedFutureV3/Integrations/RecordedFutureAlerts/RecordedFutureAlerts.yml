@@ -155,7 +155,7 @@ display: Recorded Future Alerts
 name: RecordedFutureAlerts
 script:
   commands:
-    - name: recordedfuture-alert-images
+    - name: rf-alert-images
       description: Fetch alert images.
       arguments:
       outputs:
@@ -163,7 +163,7 @@ script:
           description: "Fetch new alert images."
           type: Unknown
 
-    - name: recordedfuture-alert-rules
+    - name: rf-alert-rules
       description: Search for alert rule IDs.
       arguments:
         - name: rule_name

@@ -370,13 +370,13 @@ def main():
         elif command == "fetch-incidents":
             actions.fetch_incidents()
 
-        elif command == "recordedfuture-alert-rules":
+        elif command == "rf-alert-rules":
             return_results(actions.get_alert_rules_command())
 
-        elif command == "recordedfuture-alerts":
+        elif command == "rf-alerts":
             return_results(actions.get_alerts_command())
 
-        elif command == "recordedfuture-alert-images":
+        elif command == "rf-alert-images":
             return_results(actions.get_alert_images_command())
 
     except Exception as e:

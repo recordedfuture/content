@@ -40,8 +40,8 @@ tasks:
     task:
       id: 13787238-75d6-4cb0-8c9d-cd9c46555c90
       version: -1
-      name: recordedfuture-alert-images
-      script: Recorded Future Alerts|||recordedfuture-alert-images
+      name: rf-alert-images
+      script: Recorded Future Alerts|||rf-alert-images
       type: regular
       iscommand: true
       brand: Recorded Future Alerts

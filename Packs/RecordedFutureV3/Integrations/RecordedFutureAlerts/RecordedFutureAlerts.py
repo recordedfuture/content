@@ -210,6 +210,7 @@ class Actions:
             demisto.error(f"Failed to fetch image {image_id}: {str(e)}")
             return None
 
+    # TODO: stop using this, and use mapped fields instead?
     @staticmethod
     def search_label(labels: dict[str, Any], name: str) -> Optional[str]:
         for label in labels:
@@ -219,9 +220,9 @@ class Actions:
 
     def get_alert_images_command(self) -> list:
         incident = demisto.incident()
-        return_results(f"{incident=}")
+        # return_results(f"{incident=}")
         labels = incident.get("labels", [])
-        return_results(f"{labels=}")
+        # return_results(f"{labels=}")
 
         # alert_type = incident.get("type")  # "_Recorded Future Classic Alert"
         alert_type = self.search_label(labels, "type")
@@ -246,13 +247,13 @@ class Actions:
                 except Exception:
                     return_error(f"Failed to parse {image_ids_json_str}")
 
-        return_results(f"{image_ids=}")
+        # return_results(f"{image_ids=}")
 
         if not image_ids:
             return [CommandResults(readable_output="No screenshots found in alert details.")]
 
         context = demisto.context()
-        return_results(f"{context=}")
+        # return_results(f"{context=}")
 
         files = demisto.get(context, "File")
         if not files:
@@ -260,10 +261,10 @@ class Actions:
         if not isinstance(files, list):
             files = [files]
 
-        return_results(f"{files=}")
+        # return_results(f"{files=}")
 
         existing_file_names = {f.get("Name") for f in files}
-        return_results(f"{existing_file_names=}")
+        # return_results(f"{existing_file_names=}")
 
         # Determine missing image IDs.
         missing_image_ids = set()
@@ -276,7 +277,7 @@ class Actions:
             if file_name not in existing_file_names:
                 missing_image_ids.add(img_id)
 
-        return_results(f"{missing_image_ids=}")
+        # return_results(f"{missing_image_ids=}")
 
         if not missing_image_ids:
             return [CommandResults(readable_output="No new images to fetch.")]

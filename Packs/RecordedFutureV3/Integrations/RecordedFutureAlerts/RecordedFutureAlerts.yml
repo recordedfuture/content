@@ -91,7 +91,7 @@ configuration:
   - InProgress
   - Resolved
   - Dismissed
-  required: false
+  required: true
   section: Collect
 
 
@@ -137,7 +137,7 @@ configuration:
   - InProgress
   - Resolved
   - Dismissed
-  required: false
+  required: true
   section: Collect
 
 

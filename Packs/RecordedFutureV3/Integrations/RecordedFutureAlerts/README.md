@@ -1,4 +1,6 @@
-This README contains the full documentation for your integration.
+Recorded Future Alerts (V3)
+===========================
+
 
 You auto-generate this README file from your integration YML file using the `demisto-sdk generate-docs` command.
 

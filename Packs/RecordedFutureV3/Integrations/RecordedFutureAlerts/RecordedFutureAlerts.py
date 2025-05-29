@@ -14,11 +14,11 @@ https://github.com/demisto/content/blob/master/Packs/HelloWorld/Integrations/Hel
 
 """
 
-import platform
-import urllib3
-from typing import Any
 import concurrent.futures
+import platform
+from typing import Any, Union, Optional, List
 
+import urllib3
 import demistomock as demisto
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
 from CommonServerUserPython import *  # noqa
@@ -46,33 +46,31 @@ TIMEOUT_120 = 120
 class Client(BaseClient):
     """Client class to interact with the service API"""
 
-    def _get(self, url_suffix, timeout=90, retries=3):
-        params = demisto.args()
-        return self._call(
-            method="GET",
-            url_suffix=url_suffix,
-            params=params,
-            timeout=timeout,
-            retries=retries,
-            status_list_to_retry=STATUS_TO_RETRY,
-        )
-
-    def _post(self, url_suffix, json_data, timeout=90, retries=3):
-        return self._call(
-            method="POST",
-            url_suffix=url_suffix,
-            json_data=json_data,
-            timeout=timeout,
-            retries=retries,
-            status_list_to_retry=STATUS_TO_RETRY,
-        )
-
-    def _call(self, **kwargs):
+    def _call(self, **kwargs: Any) -> Union[dict, CommandResults]:
         try:
-            response = self._http_request(**kwargs)
-            if isinstance(response, dict) and response.get("return_error"):
+            response: dict = self._http_request(**kwargs)
+            if not isinstance(response, dict):
+                return_error(f"Bad Response: {str(response)}")
+
+            if response.get("return_error"):
                 # This will raise the Exception or call "demisto.results()" for the error and sys.exit(0).
                 return_error(**response["return_error"])
+
+            elif response.get("markdown"):
+                readable_output = response["markdown"]
+
+                outputs = response.get("data", response)
+
+                outputs_prefix = response.get("context_prefix", "")
+                outputs_key_field = response.get("context_key_field", "")
+
+                return CommandResults(
+                    outputs_prefix=outputs_prefix,
+                    outputs_key_field=outputs_key_field,
+                    readable_output=readable_output,
+                    raw_response=response,
+                    outputs=outputs,
+                )
 
         except DemistoException as err:
             if "404" in str(err):
@@ -83,26 +81,76 @@ class Client(BaseClient):
                     readable_output="No results found.",
                     outputs_key_field="",
                 )
-            else:
-                raise err
+            raise err
 
         return response
 
-    def whoami(self) -> dict[str, Any]:
+    def _get(
+        self,
+        url_suffix: str,
+        *,
+        params: Optional[dict] = None,
+        timeout: int = 90,
+        retries: int = 3,
+    ) -> Union[dict, CommandResults]:
+        return self._call(
+            method="GET",
+            url_suffix=url_suffix,
+            params=params,
+            timeout=timeout,
+            retries=retries,
+            status_list_to_retry=STATUS_TO_RETRY,
+        )
+
+    def _post(
+        self,
+        url_suffix: str,
+        json_data: dict,
+        timeout: int = 90,
+        retries: int = 3,
+    ) -> Union[dict, CommandResults]:
+        return self._call(
+            method="POST",
+            url_suffix=url_suffix,
+            json_data=json_data,
+            timeout=timeout,
+            retries=retries,
+            status_list_to_retry=STATUS_TO_RETRY,
+        )
+
+    def whoami(self) -> dict:
         return self._get(
             url_suffix="/info/whoami",
             timeout=60,
         )
 
-    def get_alerts(self) -> dict[str, Any]:
-        """Get alerts."""
-        return self._get(url_suffix="/v3/alert/search")
+    def alert_update(self) -> Union[dict, CommandResults]:
+        """Update alert"""
+        return self._post(
+            url_suffix="/v3/alert/update",
+            json_data=demisto.args(),
+            timeout=90,
+        )
 
-    def get_alert_rules(self) -> dict[str, Any]:
-        """Get alert rules."""
-        return self._get(url_suffix="/v3/alert/rules")
+    def alert_search(self) -> Union[dict, CommandResults]:
+        """Search alerts"""
+        return self._get(url_suffix="/v3/alert/search", params=demisto.args())
 
-    def get_alert_image(self, alert_type: str, alert_id: str, image_id: str, alert_sub_type: Optional[str]) -> bytes:
+    def alert_rule_search(self) -> Union[dict, CommandResults]:
+        """Search alert rules."""
+        return self._get(url_suffix="/v3/alert/rules", params=demisto.args())
+
+    def alert_lookup(self) -> Union[dict, CommandResults]:
+        """Lookup alert details"""
+        return self._get(url_suffix="/v3/alert/lookup", timeout=60, params=demisto.args())
+
+    def get_alert_image(
+        self,
+        alert_type: str,
+        alert_id: str,
+        image_id: str,
+        alert_sub_type: Optional[str],
+    ) -> bytes:
         """
         Get an image from the v3 alert image endpoint.
         Returns the raw binary content of the image.
@@ -121,7 +169,7 @@ class Client(BaseClient):
         )
         return response_content
 
-    def fetch_incidents(self) -> dict[str, Any]:
+    def fetch_incidents(self) -> dict:
         """Fetch incidents."""
         classic_query_params = demisto.getLastRun().get("next_query_classic", {})
         playbook_query_params = demisto.getLastRun().get("next_query_playbook", {})
@@ -130,9 +178,9 @@ class Client(BaseClient):
             json_data={
                 "integration_config": demisto.params(),
                 "classic_query_params": classic_query_params,
-                "playbook_query_params": playbook_query_params
+                "playbook_query_params": playbook_query_params,
             },
-            timeout=120
+            timeout=120,
         )
 
 
@@ -156,7 +204,7 @@ class Actions:
         next_query_playbook = response.get("next_query_playbook", {})
         next_query = {
             "next_query_classic": next_query_classic,
-            "next_query_playbook": next_query_playbook
+            "next_query_playbook": next_query_playbook,
         }
 
         incidents = [
@@ -171,21 +219,32 @@ class Actions:
 
         demisto.incidents(incidents)
         demisto.setLastRun(next_query)
+        return None
 
-    def get_alerts_command(self) -> dict[str, Any]:
-        """Get Alerts Command."""
-        return self.client.get_alerts()
+    def alert_search_command(self) -> Union[dict, CommandResults]:
+        return self.client.alert_search()
 
-    def get_alert_rules_command(self) -> dict[str, Any]:
-        """Get Alert Rules Command."""
-        return self.client.get_alert_rules()
+    def alert_rule_search_command(
+        self,
+    ) -> Union[dict, CommandResults]:
+        return self.client.alert_rule_search()
+
+    def alert_lookup_command(self) -> Union[dict, CommandResults]:
+        return self.client.alert_lookup()
+
+    def alert_update_command(self) -> Union[dict, CommandResults]:
+        return self.client.alert_update()
 
     @staticmethod
     def _get_file_name_from_image_id(image_id: str) -> str:
         return f"{image_id.replace('img:', '')}.png"
 
     def _get_image_and_create_attachment(
-            self, alert_type: str, alert_id: str, image_id: str, alert_sub_type: Optional[str]
+        self,
+        alert_type: str,
+        alert_id: str,
+        image_id: str,
+        alert_sub_type: Optional[str],
     ) -> Optional[dict]:
         try:
             return_results(f"Trying to fetch {image_id=} ({alert_type=} {alert_sub_type=} {alert_id=})")
@@ -210,15 +269,15 @@ class Actions:
             demisto.error(f"Failed to fetch image {image_id}: {str(e)}")
             return None
 
-    # TODO: stop using this, and use mapped fields instead?
     @staticmethod
-    def search_label(labels: dict[str, Any], name: str) -> Optional[str]:
+    def search_label(labels: List[dict], name: str) -> Optional[str]:
+        # TODO: stop using this, and use mapped fields instead?
         for label in labels:
             if label.get("type") == name:
                 return label.get("value")
         return None
 
-    def get_alert_images_command(self) -> list:
+    def get_alert_images_command(self) -> list[CommandResults]:
         incident = demisto.incident()
         # return_results(f"{incident=}")
         labels = incident.get("labels", [])
@@ -370,13 +429,14 @@ def main():
 
         elif command == "fetch-incidents":
             actions.fetch_incidents()
-
         elif command == "rf-alert-rules":
-            return_results(actions.get_alert_rules_command())
-
+            return_results(actions.alert_rule_search_command())
         elif command == "rf-alerts":
-            return_results(actions.get_alerts_command())
-
+            return_results(actions.alert_search_command())
+        elif command == "rf-alert-lookup":
+            return_results(actions.alert_lookup_command())
+        elif command == "rf-alert-update":
+            return_results(actions.alert_update_command())
         elif command == "rf-alert-images":
             return_results(actions.get_alert_images_command())
 

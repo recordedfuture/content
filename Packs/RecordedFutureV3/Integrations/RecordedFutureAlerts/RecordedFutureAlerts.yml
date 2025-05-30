@@ -256,10 +256,19 @@ script:
     - name: rf-alerts
       description: List Classic or Playbook alerts.
       arguments:
-        - name: rule_ids
-          description: Comma-separated Classic Alert Rule IDs. Cannot be used together with categories.
-        - name: categories
-          description: Comma-separated Playbook Alert categories (e.g. domain_abuse). Cannot be used together with rule_ids.
+        - name: classic_alert_rule_names
+          description: Semicolon-separated Classic Alert Rule Names. If specified - returns only Classic Alerts. Cannot be used together with playbook_alert_categories/playbook_alert_priorities. (Ex. rule_names="First rule name part 1, part 2;Second rule name").
+          required: false
+          isArray: true
+          separator: ';'
+        - name: classic_alert_rule_ids
+          description: Comma-separated Classic Alert Rule IDs. If specified - returns only Classic Alerts. Cannot be used together with playbook_alert_categories/playbook_alert_priorities.
+        - name: playbook_alert_categories
+          description: Comma-separated Playbook Alert categories (e.g. domain_abuse). If specified - returns only Playbook Alerts. Cannot be used together with classic_alert_rule_ids/classic_alert_rule_names.
+        - name: playbook_alert_priorities
+          description: Comma-separated list of Playbook Alert priorities (Informational, Moderate, High). If specified - returns only Playbook Alerts. Cannot be used together with classic_alert_rule_ids/classic_alert_rule_names.
+        - name: statuses
+          description: Comma-separated list of statuses to include (New, InProgress, Resolved, Dismissed).
         - name: limit
           description: Maximum number of alerts to return. Default 10, maximum 50.
           defaultValue: "10"
@@ -275,10 +284,26 @@ script:
           predefined:
             - asc
             - desc
-        - name: statuses
-          description: Comma-separated list of statuses to include (New, InProgress, Resolved, Dismissed).
-        - name: playbook_alert_priorities
-          description: Comma-separated list of Playbook Alert priorities (Informational, Moderate, High).
+        - name: created_from
+          description: Return only alerts updated on or before this datetime (ex. "2025-05-17T16:06:00Z).
+          required: false
+          isArray: false
+          type: string
+        - name: created_to
+          description: Return only alerts created on or before this datetime (ex. "2025-05-17T16:06:00Z).
+          required: false
+          isArray: false
+          type: string
+        - name: updated_from
+          description: Return only alerts updated on or after this datetime (ex. "2025-05-17T16:06:00Z).
+          required: false
+          isArray: false
+          type: string
+        - name: updated_to
+          description: Return only alerts updated on or before this datetime (ex. "2025-05-17T16:06:00Z).
+          required: false
+          isArray: false
+          type: string
       outputs:
         - contextPath: RecordedFutureAlerts.Alert.alert_id
           description: Unique ID of the alert.

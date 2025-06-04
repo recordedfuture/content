@@ -180,14 +180,14 @@ script:
           type: string
 
     - name: rf-alert-update
-      description: Update the status of one or multiple Playbook alerts.
+      description: Update an an alert in the Recorded Future platform.
       arguments:
         - name: alert_id
           required: true
-          description: Id of alert to update
+          description: ID of alert to update
         - name: status
           description: New status to set for the alert
-          required: true
+          required: false
           auto: PREDEFINED
           predefined:
             - New
@@ -196,9 +196,6 @@ script:
             - Resolved
         - name: comment
           description: Add comment / Replace note
-          required: false
-        - name: assignee
-          description: Email address of user to assign.
           required: false
         - name: reopen
           description: 'Only for Playbook Alerts. Set the reopen strategy for the alert. Reopen on significant updates or keep the alert Resolved. Default: reopen on significant updates. Can only be used with status=Resolved.'

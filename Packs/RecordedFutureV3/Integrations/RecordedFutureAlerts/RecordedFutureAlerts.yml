@@ -180,7 +180,7 @@ script:
           type: string
 
     - name: rf-alert-update
-      description: Update an an alert in the Recorded Future platform.
+      description: Update an alert in the Recorded Future platform.
       arguments:
         - name: alert_id
           required: true

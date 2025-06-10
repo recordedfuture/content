@@ -253,19 +253,32 @@ script:
     - name: rf-alerts
       description: List Classic or Playbook alerts.
       arguments:
-        - name: classic_alert_rule_names
-          description: Semicolon-separated Classic Alert Rule Names. If specified - returns only Classic Alerts. Cannot be used together with playbook_alert_categories/playbook_alert_priorities. (Ex. rule_names="First rule name part 1, part 2;Second rule name").
-          required: false
-          isArray: true
-          separator: ';'
+        - name: include_classic_alerts
+          description: Whether we should include classic alerts in the response. Defaults to true.
+          defaultValue: true
+          auto: PREDEFINED
+          predefined:
+            - 'true'
+            - 'false'
+        - name: include_playbook_alerts
+          description: Whether we should include playbook alerts in the response. Defaults to true.
+          defaultValue: true
+          auto: PREDEFINED
+          predefined:
+            - 'true'
+            - 'false'
         - name: classic_alert_rule_ids
           description: Comma-separated Classic Alert Rule IDs. If specified - returns only Classic Alerts. Cannot be used together with playbook_alert_categories/playbook_alert_priorities.
+          isArray: true
         - name: playbook_alert_categories
           description: Comma-separated Playbook Alert categories (e.g. domain_abuse). If specified - returns only Playbook Alerts. Cannot be used together with classic_alert_rule_ids/classic_alert_rule_names.
+          isArray: true
         - name: playbook_alert_priorities
           description: Comma-separated list of Playbook Alert priorities (Informational, Moderate, High). If specified - returns only Playbook Alerts. Cannot be used together with classic_alert_rule_ids/classic_alert_rule_names.
+          isArray: true
         - name: statuses
           description: Comma-separated list of statuses to include (New, InProgress, Resolved, Dismissed).
+          isArray: true
         - name: limit
           description: Maximum number of alerts to return. Default 10, maximum 50.
           defaultValue: "10"
@@ -275,32 +288,29 @@ script:
           predefined:
             - created_at
             - updated_at
-        - name: direction
+        - name: order_direction
           description: asc or desc (default desc).
           auto: PREDEFINED
           predefined:
             - asc
             - desc
         - name: created_from
-          description: Return only alerts updated on or before this datetime (ex. "2025-05-17T16:06:00Z).
+          description: Return only alerts created on or after this datetime (ex. "2025-05-17T16:06:00Z").
           required: false
-          isArray: false
           type: string
         - name: created_to
-          description: Return only alerts created on or before this datetime (ex. "2025-05-17T16:06:00Z).
+          description: Return only alerts created on or before this datetime (ex. "2025-05-17T16:06:00Z").
           required: false
-          isArray: false
           type: string
         - name: updated_from
-          description: Return only alerts updated on or after this datetime (ex. "2025-05-17T16:06:00Z).
+          description: Return only alerts updated on or after this datetime (ex. "2025-05-17T16:06:00Z").
           required: false
-          isArray: false
           type: string
         - name: updated_to
-          description: Return only alerts updated on or before this datetime (ex. "2025-05-17T16:06:00Z).
+          description: Return only alerts updated on or before this datetime (ex. "2025-05-17T16:06:00Z").
           required: false
-          isArray: false
           type: string
+      # TODO update outputs
       outputs:
         - contextPath: RecordedFutureAlerts.Alert.alert_id
           description: Unique ID of the alert.

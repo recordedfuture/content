@@ -172,10 +172,10 @@ script:
           description: 'Maximum number of rules to return. Default is 10.'
           defaultValue: "10"
       outputs:
-        - contextPath: RecordedFuture.AlertRule.id
+        - contextPath: RecordedFutureAlerts.AlertRule.id
           description: Alert rule ID.
           type: string
-        - contextPath: RecordedFuture.AlertRule.name
+        - contextPath: RecordedFutureAlerts.AlertRule.name
           description: Alert rule name.
           type: string
 
@@ -205,6 +205,7 @@ script:
             - never
             - significant_updates
       outputs:
+        # TODO align outputs with rf-alerts command, who is writing to the same namespace
         - contextPath: RecordedFutureAlerts.Alert.alert_id
           description: Unique id of the alert in Recorded Future.
           type: string
@@ -227,6 +228,7 @@ script:
           description: Update operation outcome markdown.
           type: string
 
+    # TODO remove this command
     - name: rf-alert-lookup
       description: Retrieve basic details (status, title) for a single alert.
       arguments:
@@ -310,22 +312,37 @@ script:
           description: Return only alerts updated on or before this datetime (ex. "2025-05-17T16:06:00Z").
           required: false
           type: string
-      # TODO update outputs
+      # TODO align outputs with rf-alert-update command, who is writing to the same namespace
       outputs:
-        - contextPath: RecordedFutureAlerts.Alert.alert_id
+        - contextPath: RecordedFutureAlerts.Alert.id
           description: Unique ID of the alert.
+          type: string
+        - contextPath: RecordedFutureAlerts.Alert.title
+          description: Title of the alert.
           type: string
         - contextPath: RecordedFutureAlerts.Alert.type
           description: Alert type (classic-alert / playbook-alert).
           type: string
-        - contextPath: RecordedFutureAlerts.Alert.title
-          description: Title.
-          type: string
         - contextPath: RecordedFutureAlerts.Alert.status
-          description: Status.
+          description: Status of the alert.
           type: string
-        - contextPath: RecordedFutureAlerts.Alert.assignee
-          description: Assignee email.
+        - contextPath: RecordedFutureAlerts.Alert.created
+          description: When the date was created as an ISO8601 string.
+          type: string
+        - contextPath: RecordedFutureAlerts.Alert.updated
+          description: When the date was updated as an ISO8601 string.
+          type: string
+        - contextPath: RecordedFutureAlerts.Alert.classic_alert_rule_name
+          description: If alert is a classic alert, this is the name of the rule that triggered the alert.
+          type: string
+        - contextPath: RecordedFutureAlerts.Alert.classic_alert_rule_id
+          description: If alert is a classic alert, this is the name of the rule that triggered the alert.
+          type: string
+        - contextPath: RecordedFutureAlerts.Alert.playbook_alert_category
+          description: If alert is a playbook alert, this is the category of the alert.
+          type: string
+        - contextPath: RecordedFutureAlerts.Alert.playbook_alert_priority
+          description: If alert is a playbook alert, this is the priority of the alert.
           type: string
 
 

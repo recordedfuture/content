@@ -55,6 +55,8 @@ configuration:
   section: Collect
 
 - display: Maximum number of incidents per fetch
+  # TODO: should we use 50 as max value?
+  additionalinfo: 'The max number of incidents to fetch per run. Cannot be bigger than 50.'
   name: max_fetch
   defaultvalue: "50"
   type: 0
@@ -62,7 +64,7 @@ configuration:
   section: Collect
 
 - display: 'First fetch time'
-  additionalinfo: 'How far back we should fetch alerts on the first incident fetch. This value is not used for subsequent fetches.'
+  additionalinfo: 'How far back we should fetch alerts on the first incident fetch. This value is not used for subsequent fetches. Cannot be bigger than 90 days.'
   defaultvalue: '1440' # 1 day
   name: first_fetch
   type: 19

@@ -193,6 +193,29 @@ class Actions:
     def __init__(self, rf_client: Client):
         self.client = rf_client
 
+    def test_module(self) -> None:
+        # This is the call made when pressing the integration Test button.
+        # Returning 'ok' indicates that the integration works like it suppose to and
+        # connection to the service is successful.
+        # Returning 'ok' will make the test result be green.
+        # Any other response will make the test result be red.
+
+        try:
+            self.client.whoami()
+            return_results("ok")
+        except Exception as err:
+            message = str(err)
+            try:
+                error = json.loads(str(err).split("\n")[1])
+                if "fail" in error.get("result", {}).get("status", ""):
+                    message = error.get("result", {})["message"]
+            except Exception:
+                message = (
+                    f"Unknown error. Please verify that the API URL and Token are correctly configured. RAW Error: {err}"
+                )
+            raise DemistoException(f"Failed due to - {message}")
+
+
     def fetch_incidents(self) -> None:
         response = self.client.fetch_incidents()
         if isinstance(response, CommandResults):
@@ -406,27 +429,7 @@ def main():
         actions = Actions(client)
 
         if command == "test-module":
-            # This is the call made when pressing the integration Test button.
-            # Returning 'ok' indicates that the integration works like it suppose to and
-            # connection to the service is successful.
-            # Returning 'ok' will make the test result be green.
-            # Any other response will make the test result be red.
-
-            try:
-                client.whoami()
-                return_results("ok")
-            except Exception as err:
-                message = str(err)
-                try:
-                    error = json.loads(str(err).split("\n")[1])
-                    if "fail" in error.get("result", {}).get("status", ""):
-                        message = error.get("result", {})["message"]
-                except Exception:
-                    message = (
-                        f"Unknown error. Please verify that the API URL and Token are correctly configured. RAW Error: {err}"
-                    )
-                raise DemistoException(f"Failed due to - {message}")
-
+            actions.test_module()
         elif command == "fetch-incidents":
             actions.fetch_incidents()
         elif command == "rf-alert-rules":

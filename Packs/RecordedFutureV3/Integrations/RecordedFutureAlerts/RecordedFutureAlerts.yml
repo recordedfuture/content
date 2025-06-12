@@ -205,12 +205,11 @@ script:
             - never
             - significant_updates
       outputs:
-        # TODO align outputs with rf-alerts command, who is writing to the same namespace
-        - contextPath: RecordedFutureAlerts.Alert.alert_id
+        - contextPath: RecordedFutureAlerts.Alert.id
           description: Unique id of the alert in Recorded Future.
           type: string
-        - contextPath: RecordedFutureAlerts.Alert.alert_type
-          description: Alert type
+        - contextPath: RecordedFutureAlerts.Alert.type
+          description: Alert type (classic-alert / playbook-alert).
           type: string
         - contextPath: RecordedFutureAlerts.Alert.status
           description: Status of alert in Recorded Future.
@@ -219,13 +218,7 @@ script:
           description: Assignee email.
           type: string
         - contextPath: RecordedFutureAlerts.Alert.comment
-          description: Note (Classic) or comment (Playbook) applied.
-          type: string
-        - contextPath: RecordedFutureAlerts.Alert.message
-          description: Update operation outcome message.
-          type: string
-        - contextPath: RecordedFutureAlerts.Alert.markdown
-          description: Update operation outcome markdown.
+          description: Note (Classic) or comment (Playbook) that was just applied.
           type: string
 
     # TODO remove this command
@@ -312,10 +305,9 @@ script:
           description: Return only alerts updated on or before this datetime (ex. "2025-05-17T16:06:00Z").
           required: false
           type: string
-      # TODO align outputs with rf-alert-update command, who is writing to the same namespace
       outputs:
         - contextPath: RecordedFutureAlerts.Alert.id
-          description: Unique ID of the alert.
+          description: Unique id of the alert in Recorded Future.
           type: string
         - contextPath: RecordedFutureAlerts.Alert.title
           description: Title of the alert.

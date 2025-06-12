@@ -46,7 +46,7 @@ TIMEOUT_120 = 120
 class Client(BaseClient):
     """Client class to interact with the service API"""
 
-    def _call(self, **kwargs: Any) -> Union[dict, CommandResults]:
+    def _call(self, **kwargs: Any) -> Union[dict, list[CommandResults]]:
         try:
             response: dict = self._http_request(**kwargs)
             if not isinstance(response, dict):
@@ -56,34 +56,32 @@ class Client(BaseClient):
                 # This will raise the Exception or call "demisto.results()" for the error and sys.exit(0).
                 return_error(**response["return_error"])
 
-            elif response.get("markdown"):
-                readable_output = response["markdown"]
+            result_actions = response.get("result_actions")
+            if isinstance(result_actions, list):
+                return [
+                    # Take all CommandResults params verbatim from the response, except the `outputs` param,
+                    # which is taken from `raw_response.outputs` to minimize payload size
+                    CommandResults(
+                        outputs=result_action.get("raw_response", {}).get("outputs", None), **result_action
+                    ) for result_action in result_actions if isinstance(result_action, dict)
+                ]
+            else:
+                return_error(f"Bad Response: {str(response)}")
 
-                outputs = response.get("data", response)
-
-                outputs_prefix = response.get("context_prefix", "")
-                outputs_key_field = response.get("context_key_field", "")
-
-                return CommandResults(
-                    outputs_prefix=outputs_prefix,
-                    outputs_key_field=outputs_key_field,
-                    readable_output=readable_output,
-                    raw_response=response,
-                    outputs=outputs,
-                )
+            return response
 
         except DemistoException as err:
             if "404" in str(err):
-                return CommandResults(
-                    outputs_prefix="",
-                    outputs={},
-                    raw_response={},
-                    readable_output="No results found.",
-                    outputs_key_field="",
-                )
+                return [
+                    CommandResults(
+                        outputs_prefix="",
+                        outputs={},
+                        raw_response={},
+                        readable_output="No results found.",
+                        outputs_key_field="",
+                    )
+                ]
             raise err
-
-        return response
 
     def _get(
         self,
@@ -92,7 +90,7 @@ class Client(BaseClient):
         params: Optional[dict] = None,
         timeout: int = 90,
         retries: int = 3,
-    ) -> Union[dict, CommandResults]:
+    ) -> Union[dict, list[CommandResults]]:
         return self._call(
             method="GET",
             url_suffix=url_suffix,
@@ -108,7 +106,7 @@ class Client(BaseClient):
         json_data: dict,
         timeout: int = 90,
         retries: int = 3,
-    ) -> Union[dict, CommandResults]:
+    ) -> Union[dict, list[CommandResults]]:
         return self._call(
             method="POST",
             url_suffix=url_suffix,
@@ -124,7 +122,7 @@ class Client(BaseClient):
             timeout=60,
         )
 
-    def alert_update(self) -> Union[dict, CommandResults]:
+    def alert_update(self) -> Union[dict, list[CommandResults]]:
         """Update alert"""
         return self._post(
             url_suffix="/v3/alert/update",
@@ -132,15 +130,15 @@ class Client(BaseClient):
             timeout=90,
         )
 
-    def alert_search(self) -> Union[dict, CommandResults]:
+    def alert_search(self) -> Union[dict, list[CommandResults]]:
         """Search alerts"""
         return self._get(url_suffix="/v3/alert/search", params=demisto.args())
 
-    def alert_rule_search(self) -> Union[dict, CommandResults]:
+    def alert_rule_search(self) -> Union[dict, list[CommandResults]]:
         """Search alert rules."""
         return self._get(url_suffix="/v3/alert/rules", params=demisto.args())
 
-    def alert_lookup(self) -> Union[dict, CommandResults]:
+    def alert_lookup(self) -> Union[dict, list[CommandResults]]:
         """Lookup alert details"""
         return self._get(url_suffix="/v3/alert/lookup", timeout=60, params=demisto.args())
 
@@ -221,18 +219,18 @@ class Actions:
         demisto.setLastRun(next_query)
         return None
 
-    def alert_search_command(self) -> Union[dict, CommandResults]:
+    def alert_search_command(self) -> Union[dict, list[CommandResults]]:
         return self.client.alert_search()
 
     def alert_rule_search_command(
         self,
-    ) -> Union[dict, CommandResults]:
+    ) -> Union[dict, list[CommandResults]]:
         return self.client.alert_rule_search()
 
-    def alert_lookup_command(self) -> Union[dict, CommandResults]:
+    def alert_lookup_command(self) -> Union[dict, list[CommandResults]]:
         return self.client.alert_lookup()
 
-    def alert_update_command(self) -> Union[dict, CommandResults]:
+    def alert_update_command(self) -> Union[dict, list[CommandResults]]:
         return self.client.alert_update()
 
     @staticmethod

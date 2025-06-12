@@ -50,7 +50,7 @@ class Client(BaseClient):
         try:
             response: dict = self._http_request(**kwargs)
             if not isinstance(response, dict):
-                return_error(f"Bad Response: {str(response)}")
+                return_error(f"Bad Response, response was not a dict: {str(response)}")
 
             if response.get("return_error"):
                 # This will raise the Exception or call "demisto.results()" for the error and sys.exit(0).
@@ -65,10 +65,12 @@ class Client(BaseClient):
                         outputs=result_action.get("raw_response", {}).get("outputs", None), **result_action
                     ) for result_action in result_actions if isinstance(result_action, dict)
                 ]
+            elif result_actions:
+                return_error(f"Bad Response, result_actions was present but not a list: {str(response)}")
             else:
-                return_error(f"Bad Response: {str(response)}")
-
-            return response
+                # We called an endpoint that didn't try to return command results (e.g. fetch-incidents),
+                # should just pass response object directly to XSOAR
+                return response
 
         except DemistoException as err:
             if "404" in str(err):

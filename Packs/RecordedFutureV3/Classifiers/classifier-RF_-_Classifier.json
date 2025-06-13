@@ -1,16 +1,8 @@
 {
-	"brands": null,
-	"cacheVersn": 0,
 	"defaultIncidentType": "RF PBA",
-	"definitionId": "",
 	"description": "Classifies Recorded Future classic and playbook alerts.",
 	"feed": false,
-	"fromServerVersion": "",
 	"id": "RF - Classifier",
-	"incidentSamples": null,
-	"indicatorSamples": null,
-	"instanceIds": null,
-	"itemVersion": "",
 	"keyTypeMap": {
 		"classic-alert": "RF Classic Alert",
 		"code_repo_leakage": "RF Data Leakage on Code Repo PBA",
@@ -19,20 +11,10 @@
 		"geopolitics_facility": "RF Facility Risk PBA",
 		"third_party_risk": "RF Third-Party Cyber PBA"
 	},
-	"locked": false,
-	"logicalVersion": 11,
-	"mapping": null,
 	"name": "RF - Classifier",
-	"nameRaw": "RF - Classifier",
-	"packID": "",
-	"packName": "",
-	"sourceClassifierId": "",
-	"system": false,
-	"toServerVersion": "",
 	"transformer": {
 		"simple": "subtype"
 	},
 	"type": "classification",
-	"unclassifiedCases": null,
 	"version": -1
 }

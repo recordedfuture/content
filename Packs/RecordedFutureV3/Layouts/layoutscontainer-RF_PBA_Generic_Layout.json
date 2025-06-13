@@ -1,12 +1,6 @@
 {
-	"cacheVersn": 0,
-	"close": null,
-	"definitionId": "",
 	"description": "Default layout for RF Playbook Alerts.",
-	"detached": false,
-	"details": null,
 	"detailsV2": {
-		"TypeName": "",
 		"tabs": [
 			{
 				"id": "summary",
@@ -613,21 +607,12 @@
 			}
 		]
 	},
-	"edit": null,
 	"fromServerVersion": "6.5.0",
 	"group": "incident",
 	"id": "RF PBA Generic Layout",
-	"indicatorsDetails": null,
-	"indicatorsQuickView": null,
 	"itemVersion": "1.8.3",
 	"locked": false,
-	"mobile": null,
 	"name": "RF PBA Generic Layout",
-	"packID": "",
-	"packName": "Recorded Future Intelligence",
-	"quickView": null,
-	"quickViewV2": null,
 	"system": false,
-	"toServerVersion": "99.99.99",
 	"version": -1
 }

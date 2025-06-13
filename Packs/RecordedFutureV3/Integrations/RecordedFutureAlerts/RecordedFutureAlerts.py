@@ -140,10 +140,6 @@ class Client(BaseClient):
         """Search alert rules."""
         return self._get(url_suffix="/v3/alert/rules", params=demisto.args())
 
-    def alert_lookup(self) -> Union[dict, list[CommandResults]]:
-        """Lookup alert details"""
-        return self._get(url_suffix="/v3/alert/lookup", timeout=60, params=demisto.args())
-
     def get_alert_image(
         self,
         alert_type: str,
@@ -271,9 +267,6 @@ class Actions:
         self,
     ) -> Union[dict, list[CommandResults]]:
         return self.client.alert_rule_search()
-
-    def alert_lookup_command(self) -> Union[dict, list[CommandResults]]:
-        return self.client.alert_lookup()
 
     def alert_update_command(self) -> Union[dict, list[CommandResults]]:
         return self.client.alert_update()
@@ -456,8 +449,6 @@ def main():
             return_results(actions.alert_rule_search_command())
         elif command == "rf-alerts":
             return_results(actions.alert_search_command())
-        elif command == "rf-alert-lookup":
-            return_results(actions.alert_lookup_command())
         elif command == "rf-alert-update":
             return_results(actions.alert_update_command())
         elif command == "rf-alert-images":

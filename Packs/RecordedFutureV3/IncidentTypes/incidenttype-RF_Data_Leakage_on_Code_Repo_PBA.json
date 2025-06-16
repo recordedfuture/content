@@ -7,13 +7,7 @@
 	"detached": false,
 	"disabled": false,
 	"extractSettings": {
-		"fieldCliNameToExtractSettings": {
-			"rfmarkdown": {
-				"extractAsIsIndicatorTypeId": "",
-				"extractIndicatorTypesIDs": [],
-				"isExtractingAllIndicatorTypes": false
-			}
-		},
+		"fieldCliNameToExtractSettings": {},
 		"mode": "Specific"
 	},
 	"hours": 0,

@@ -1,5 +1,6 @@
 {
-    "definitionId": "",
+	"associatedToAll": false,
+	"definitionId": "",
 	"associatedTypes": [
 		"RF Classic Alert"
 	],

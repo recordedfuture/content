@@ -239,17 +239,35 @@ script:
             - 'true'
             - 'false'
         - name: classic_alert_rule_ids
-          description: Comma-separated Classic Alert Rule IDs. If specified - returns only Classic Alerts. Cannot be used together with playbook_alert_categories/playbook_alert_priorities.
+          description: Comma-separated Classic Alert Rule IDs. Only applied to Classic Alert search.
           isArray: true
         - name: playbook_alert_categories
-          description: Comma-separated Playbook Alert categories (e.g. domain_abuse). If specified - returns only Playbook Alerts. Cannot be used together with classic_alert_rule_ids/classic_alert_rule_names.
+          description: Comma-separated Playbook Alert categories (ex. 'domain_abuse,cyber_vulnerability,code_repo_leakage,third_party_risk,geopolitics_facility'). Only applied to Playbook Alert search.
           isArray: true
+          auto: PREDEFINED
+          predefined:
+            - domain_abuse
+            - cyber_vulnerability
+            - code_repo_leakage
+            - third_party_risk
+            - geopolitics_facility
         - name: playbook_alert_priorities
-          description: Comma-separated list of Playbook Alert priorities (Informational, Moderate, High). If specified - returns only Playbook Alerts. Cannot be used together with classic_alert_rule_ids/classic_alert_rule_names.
+          description: Comma-separated Playbook Alert priorities (ex. 'Informational,Moderate,High'). Only applied to Playbook Alert search.
           isArray: true
+          auto: PREDEFINED
+          predefined:
+            - Informational
+            - Moderate
+            - High
         - name: statuses
-          description: Comma-separated list of statuses to include (New, InProgress, Resolved, Dismissed).
+          description: Comma-separated list of statuses to include (ex. 'New,InProgress,Resolved,Dismissed').
           isArray: true
+          auto: PREDEFINED
+          predefined:
+            - New
+            - InProgress
+            - Resolved
+            - Dismissed
         - name: limit
           description: Maximum number of alerts to return. Default 10, maximum 50.
           defaultValue: "10"
@@ -290,6 +308,9 @@ script:
           type: string
         - contextPath: RecordedFutureAlerts.Alert.type
           description: Alert type (classic-alert / playbook-alert).
+          type: string
+        - contextPath: RecordedFutureAlerts.Alert.subtype
+          description: Alert subtype (domain_abuse / cyber_vulnerability / code_repo_leakage / third_party_risk / geopolitics_facility).
           type: string
         - contextPath: RecordedFutureAlerts.Alert.status
           description: Status of the alert.

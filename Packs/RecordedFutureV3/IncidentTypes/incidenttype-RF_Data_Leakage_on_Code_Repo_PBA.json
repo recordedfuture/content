@@ -1,0 +1,32 @@
+{
+	"autorun": false,
+	"color": "#E5CF7C",
+	"days": 0,
+	"daysR": 0,
+	"default": false,
+	"detached": false,
+	"disabled": false,
+	"extractSettings": {
+		"fieldCliNameToExtractSettings": {
+			"rfmarkdown": {
+				"extractAsIsIndicatorTypeId": "",
+				"extractIndicatorTypesIDs": [],
+				"isExtractingAllIndicatorTypes": false
+			}
+		},
+		"mode": "Specific"
+	},
+	"hours": 0,
+	"hoursR": 0,
+	"id": "RF Data Leakage on Code Repo PBA",
+	"layout": "RF PBA Generic Layout",
+	"locked": false,
+	"name": "RF Data Leakage on Code Repo PBA",
+	"onChangeRepAlg": 1,
+	"readonly": false,
+	"reputationCalc": 0,
+	"system": false,
+	"version": -1,
+	"weeks": 0,
+	"weeksR": 0
+}

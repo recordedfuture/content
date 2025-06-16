@@ -199,20 +199,23 @@ class Actions:
         demisto_params = demisto.params()
 
         # Validate first_fetch
-        first_fetch = demisto_params.get("first_fetch", None)
-        if not isinstance(first_fetch, int):
+        first_fetch = str(demisto_params.get("first_fetch", ""))
+
+        if first_fetch.isnumeric():
+            first_fetch = int(first_fetch)
+        else:
             raise ValueError("'first_fetch' parameter must be a number")
-        first_fetch = int(first_fetch)
         ninety_days_in_minutes = 90 * 24 * 60
         if first_fetch > ninety_days_in_minutes:
             raise ValueError("'first_fetch' parameter cannot be bigger than 90 days")
 
         # Validate max_fetch
         # TODO: should we use 50 as max value?
-        max_fetch = demisto_params.get("max_fetch", None)
-        if not max_fetch.isnumeric():
+        max_fetch = str(demisto_params.get("max_fetch", ""))
+        if max_fetch.isnumeric():
+            max_fetch = int(max_fetch)
+        else:
             raise ValueError("'max_fetch' parameter must be a number")
-        max_fetch = int(max_fetch)
         if max_fetch > 50:
             raise ValueError("'max_fetch' parameter cannot be bigger than 50")
 

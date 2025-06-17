@@ -140,12 +140,19 @@ class Client(BaseClient):
         """Search alert rules."""
         return self._get(url_suffix="/v3/alert/rules", params=demisto.args())
 
+    def alert_lookup(self, alert_id: str) -> dict:
+        return self._get(
+            url_suffix="/v3/alert/lookup",
+            params={"alert_id": alert_id},
+            timeout=90,
+        )
+
     def get_alert_image(
         self,
         alert_type: str,
         alert_id: str,
         image_id: str,
-        alert_sub_type: Optional[str],
+        alert_subtype: Optional[str],
     ) -> bytes:
         """
         Get an image from the v3 alert image endpoint.
@@ -156,7 +163,7 @@ class Client(BaseClient):
             url_suffix="/v3/alert/image",
             params={
                 "alert_type": alert_type,
-                "alert_sub_type": alert_sub_type,
+                "alert_subtype": alert_subtype,
                 "alert_id": alert_id,
                 "image_id": image_id,
             },
@@ -283,17 +290,17 @@ class Actions:
         alert_type: str,
         alert_id: str,
         image_id: str,
-        alert_sub_type: Optional[str],
+        alert_subtype: Optional[str],
     ) -> Optional[dict]:
         try:
-            return_results(f"Trying to fetch {image_id=} ({alert_type=} {alert_sub_type=} {alert_id=})")
+            return_results(f"Trying to fetch {image_id=} ({alert_type=} {alert_subtype=} {alert_id=})")
             image_content = self.client.get_alert_image(
                 alert_type=alert_type,
                 alert_id=alert_id,
                 image_id=image_id,
-                alert_sub_type=alert_sub_type,
+                alert_subtype=alert_subtype,
             )
-            return_results(f"Fetched {image_id=} ({alert_type=} {alert_sub_type=} {alert_id=}): {image_content[:50]} (truncated)")
+            return_results(f"Fetched {image_id=} ({alert_type=} {alert_subtype=} {alert_id=}): {image_content[:50]} (truncated)")
             file_name = self._get_file_name_from_image_id(image_id)
             file_result_obj = fileResult(file_name, image_content)
             demisto.results(file_result_obj)  # Important
@@ -308,50 +315,32 @@ class Actions:
             demisto.error(f"Failed to fetch image {image_id}: {str(e)}")
             return None
 
-    @staticmethod
-    def search_label(labels: List[dict], name: str) -> Optional[str]:
-        # TODO: stop using this, and use mapped fields instead?
-        for label in labels:
-            if label.get("type") == name:
-                return label.get("value")
-        return None
-
     def get_alert_images_command(self) -> list[CommandResults]:
         incident = demisto.incident()
-        # return_results(f"{incident=}")
-        labels = incident.get("labels", [])
-        # return_results(f"{labels=}")
-
-        # alert_type = incident.get("type")  # "_Recorded Future Classic Alert"
-        alert_type = self.search_label(labels, "type")
-        # "classic-alert" or "playbook-alert"
-        if not alert_type:
-            return_error("Failed to get alert_type from incident labels.")
-
-        alert_sub_type = self.search_label(labels, "subtype")
 
         alert_id = incident.get("alertid")
         if not alert_id:
-            alert_id = self.search_label(labels, "id")
-        if not alert_id:
             return_error("Failed to get alert id from incident.")
 
-        image_ids = []
-        for label in labels:
-            if label.get("type") == "images":
-                image_ids_json_str = label.get("value")
-                try:
-                    image_ids = json.loads(image_ids_json_str)
-                except Exception:
-                    return_error(f"Failed to parse {image_ids_json_str}")
+        lookup_result = self.client.alert_lookup(alert_id)
 
-        # return_results(f"{image_ids=}")
+        if isinstance(lookup_result, list) and lookup_result and isinstance(
+            lookup_result[0], CommandResults
+        ):
+            lookup_data = lookup_result[0].raw_response.get("outputs", {})
+        else:
+            return_error("Failed to lookup alert.")
+            return  # noqa
+
+        alert_type = lookup_data.get("type")
+        alert_subtype = lookup_data.get("subtype")
+
+        image_ids = lookup_data.get("images", []) or []
 
         if not image_ids:
             return [CommandResults(readable_output="No screenshots found in alert details.")]
 
         context = demisto.context()
-        # return_results(f"{context=}")
 
         files = demisto.get(context, "File")
         if not files:
@@ -359,10 +348,7 @@ class Actions:
         if not isinstance(files, list):
             files = [files]
 
-        # return_results(f"{files=}")
-
         existing_file_names = {f.get("Name") for f in files}
-        # return_results(f"{existing_file_names=}")
 
         # Determine missing image IDs.
         missing_image_ids = set()
@@ -374,8 +360,6 @@ class Actions:
             file_name = self._get_file_name_from_image_id(img_id)
             if file_name not in existing_file_names:
                 missing_image_ids.add(img_id)
-
-        # return_results(f"{missing_image_ids=}")
 
         if not missing_image_ids:
             return [CommandResults(readable_output="No new images to fetch.")]
@@ -391,7 +375,7 @@ class Actions:
                     alert_type=alert_type,
                     alert_id=alert_id,
                     image_id=img_id,
-                    alert_sub_type=alert_sub_type,
+                    alert_subtype=alert_subtype,
                 )
                 futures[future] = img_id
 

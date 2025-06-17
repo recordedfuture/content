@@ -327,7 +327,7 @@ class Actions:
         if isinstance(lookup_result, list) and lookup_result and isinstance(
             lookup_result[0], CommandResults
         ):
-            lookup_data = lookup_result[0].raw_response.get("outputs", {})
+            lookup_data = lookup_result[0].outputs
         else:
             return_error("Failed to lookup alert.")
             return  # noqa

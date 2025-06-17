@@ -317,8 +317,7 @@ class Actions:
 
     def get_alert_images_command(self) -> list[CommandResults]:
         incident = demisto.incident()
-
-        alert_id = incident.get("alertid")
+        alert_id = incident.get("CustomFields", {}).get("alertid")
         if not alert_id:
             return_error("Failed to get alert id from incident.")
 

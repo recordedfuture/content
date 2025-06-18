@@ -1,7 +1,7 @@
 {
 	"associatedToAll": false,
 	"associatedTypes": [
-		"RF Domain Abuse PBA"
+		"RF Domain Abuse Playbook Alert"
 	],
 	"caseInsensitive": true,
 	"cliName": "rfidentifieddomain",

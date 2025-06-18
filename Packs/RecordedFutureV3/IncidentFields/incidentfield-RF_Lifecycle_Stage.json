@@ -1,7 +1,7 @@
 {
 	"associatedToAll": false,
 	"associatedTypes": [
-		"RF Vulnerability PBA"
+		"RF Vulnerability Playbook Alert"
 	],
 	"caseInsensitive": true,
 	"cliName": "rflifecyclestage",

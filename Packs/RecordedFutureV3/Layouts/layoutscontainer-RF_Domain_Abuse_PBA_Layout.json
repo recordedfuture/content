@@ -83,7 +83,6 @@
 								"startCol": 0
 							}
 						],
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -96,7 +95,6 @@
 					{
 						"h": 2,
 						"i": "rnhx8qgqf8-wjirsnzpxy-caseinfoid-kwsyexkuoz-caseinfoid-61263cc0-98b1-11e9-97d7-ed26ef9e46c8",
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -111,7 +109,6 @@
 						"displayType": "ROW",
 						"h": 2,
 						"i": "rnhx8qgqf8-wjirsnzpxy-caseinfoid-kwsyexkuoz-caseinfoid-6aabad20-98b1-11e9-97d7-ed26ef9e46c8",
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -127,7 +124,6 @@
 						"h": 2,
 						"i": "rnhx8qgqf8-wjirsnzpxy-caseinfoid-kwsyexkuoz-caseinfoid-770ec200-98b1-11e9-97d7-ed26ef9e46c8",
 						"isVisible": true,
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -142,7 +138,6 @@
 						"displayType": "ROW",
 						"h": 2,
 						"i": "rnhx8qgqf8-wjirsnzpxy-caseinfoid-kwsyexkuoz-caseinfoid-4a31afa0-98ba-11e9-a519-93a53c759fe0",
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -158,7 +153,6 @@
 						"h": 2,
 						"hideName": false,
 						"i": "rnhx8qgqf8-wjirsnzpxy-caseinfoid-kwsyexkuoz-caseinfoid-7717e580-9bed-11e9-9a3f-8b4b2158e260",
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -173,7 +167,6 @@
 						"displayType": "ROW",
 						"h": 4,
 						"i": "rnhx8qgqf8-wjirsnzpxy-caseinfoid-kwsyexkuoz-caseinfoid-7ce69dd0-a07f-11e9-936c-5395a1acf11e",
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -220,7 +213,6 @@
 								"startCol": 0
 							}
 						],
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -247,7 +239,6 @@
 								"startCol": 0
 							}
 						],
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -261,7 +252,6 @@
 						"h": 2,
 						"i": "rnhx8qgqf8-wjirsnzpxy-caseinfoid-8df903e0-2500-11f0-b487-0b801510fc41",
 						"items": [],
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -327,7 +317,6 @@
 								"startCol": 1
 							}
 						],
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -354,13 +343,13 @@
 								"index": 0,
 								"listId": "rnhx8qgqf8-wjirsnzpxy-caseinfoid-cc7bc024-eb46-44c7-b5ac-031f509e13ab",
 								"name": "Fetch Alert Images",
-								"scriptId": "RecordedFutureAlerts_new|||rf-alert-images",
+								"scriptId": "RecordedFutureAlerts|||rf-alert-images",
 								"sectionItemType": "button",
 								"startCol": 0
 							},
 							{
 								"args": {
-									"alert_ids": {
+									"alert_id": {
 										"complex": {
 											"accessor": "alertid",
 											"filters": [],
@@ -375,6 +364,10 @@
 									"reopen": {
 										"simple": "",
 										"userMarkedRequired": true
+									},
+									"status": {
+										"simple": "",
+										"userMarkedRequired": true
 									}
 								},
 								"buttonClass": "primary",
@@ -387,7 +380,7 @@
 								"index": 1,
 								"listId": "caseinfoid-420689e3-0a83-4200-83c7-768902968fb0",
 								"name": "Update Alert",
-								"scriptId": "RecordedFuturePlaybookAlerts|||recordedfuture-playbook-alerts-update",
+								"scriptId": "RecordedFutureAlerts|||rf-alert-update",
 								"sectionItemType": "button",
 								"startCol": 0
 							},
@@ -400,6 +393,10 @@
 											"root": "incident",
 											"transformers": []
 										}
+									},
+									"comment": {
+										"simple": "",
+										"userMarkedRequired": true
 									}
 								},
 								"buttonClass": "primary",
@@ -410,7 +407,7 @@
 								"id": "a8000a6d-dfb5-4c64-ad70-b92ec2c977d7",
 								"index": 2,
 								"name": "Add Note for Tuning",
-								"scriptId": "Recorded Future v2|||recordedfuture-alert-set-note",
+								"scriptId": "RecordedFutureAlerts|||rf-alert-update",
 								"sectionItemType": "button",
 								"startCol": 0
 							},
@@ -530,7 +527,6 @@
 								"startCol": 1
 							}
 						],
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -544,7 +540,6 @@
 						"h": 2,
 						"i": "rnhx8qgqf8-8a5f9a03-db42-40e4-816c-3835d068aac0",
 						"items": [],
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,
@@ -628,7 +623,6 @@
 								"startCol": 0
 							}
 						],
-						"maxH": null,
 						"maxW": 3,
 						"minH": 1,
 						"moved": false,

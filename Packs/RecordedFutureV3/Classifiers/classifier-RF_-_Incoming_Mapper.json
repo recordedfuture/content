@@ -99,7 +99,7 @@
 				}
 			}
 		},
-		"RF Data Leakage on Code Repo PBA": {
+		"RF Data Leakage on Code Repo Playbook Alert": {
 			"dontMapEventToLabels": false,
 			"internalMapping": {
 				"Alert Category": {
@@ -206,7 +206,7 @@
 				}
 			}
 		},
-		"RF Domain Abuse PBA": {
+		"RF Domain Abuse Playbook Alert": {
 			"dontMapEventToLabels": false,
 			"internalMapping": {
 				"Alert Category": {
@@ -337,7 +337,7 @@
 				}
 			}
 		},
-		"RF Facility Risk PBA": {
+		"RF Facility Risk Playbook Alert": {
 			"dontMapEventToLabels": false,
 			"internalMapping": {
 				"Alert Category": {
@@ -444,7 +444,7 @@
 				}
 			}
 		},
-		"RF PBA": {
+		"RF Playbook Alert": {
 			"dontMapEventToLabels": false,
 			"internalMapping": {
 				"Alert Category": {
@@ -540,7 +540,7 @@
 				}
 			}
 		},
-		"RF Third-Party Cyber PBA": {
+		"RF Third-Party Cyber Playbook Alert": {
 			"dontMapEventToLabels": false,
 			"internalMapping": {
 				"Alert Category": {
@@ -647,7 +647,7 @@
 				}
 			}
 		},
-		"RF Vulnerability PBA": {
+		"RF Vulnerability Playbook Alert": {
 			"dontMapEventToLabels": false,
 			"internalMapping": {
 				"Alert Category": {

@@ -2,8 +2,8 @@
 	"associatedToAll": false,
 	"associatedTypes": [
 		"RF Classic Alert",
-		"RF Domain Abuse PBA",
-		"RF Vulnerability PBA"
+		"RF Domain Abuse Playbook Alert",
+		"RF Vulnerability Playbook Alert"
 	],
 	"caseInsensitive": true,
 	"cliName": "rftriggeredby",

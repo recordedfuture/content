@@ -406,17 +406,17 @@
 								},
 								"buttonClass": "primary",
 								"dropEffect": "move",
-								"endCol": 2,
+								"endCol": 1,
 								"fieldId": "",
 								"height": 44,
 								"hexColor": null,
 								"id": "600e55c4-acab-4a45-9d02-6192cd80e924",
-								"index": 0,
+								"index": 3,
 								"listId": "wjirsnzpxy-caseinfoid-cc7bc024-eb46-44c7-b5ac-031f509e13ab",
 								"name": "Enrich IP Address",
 								"scriptId": "Recorded Future v2|||ip",
 								"sectionItemType": "button",
-								"startCol": 1
+								"startCol": 0
 							},
 							{
 								"args": {
@@ -431,7 +431,7 @@
 								"fieldId": "",
 								"height": 44,
 								"id": "141503d0-3b1c-11f0-b7f4-dd8445ab2e15",
-								"index": 1,
+								"index": 0,
 								"listId": "wjirsnzpxy-caseinfoid-cc7bc024-eb46-44c7-b5ac-031f509e13ab",
 								"name": "Enrich Domain",
 								"scriptId": "Recorded Future v2|||domain",
@@ -451,7 +451,7 @@
 								"fieldId": "",
 								"height": 44,
 								"id": "1ac88f80-3b1c-11f0-b7f4-dd8445ab2e15",
-								"index": 2,
+								"index": 1,
 								"listId": "wjirsnzpxy-caseinfoid-cc7bc024-eb46-44c7-b5ac-031f509e13ab",
 								"name": "Enrich File Hash",
 								"scriptId": "Recorded Future v2|||file",
@@ -471,10 +471,29 @@
 								"fieldId": "",
 								"height": 44,
 								"id": "1e6bf500-3b1c-11f0-b7f4-dd8445ab2e15",
-								"index": 3,
+								"index": 2,
 								"listId": "wjirsnzpxy-caseinfoid-cc7bc024-eb46-44c7-b5ac-031f509e13ab",
 								"name": "Enrich URL",
 								"scriptId": "Recorded Future v2|||url",
+								"sectionItemType": "button",
+								"startCol": 1
+							},
+							{
+								"args": {
+									"collective_insights": {
+										"simple": "",
+										"userMarkedRequired": true
+									}
+								},
+								"dropEffect": "move",
+								"endCol": 2,
+								"fieldId": "",
+								"height": 44,
+								"id": "059c24e1-6609-4a46-ba26-673fad3b3fa3",
+								"index": 4,
+								"listId": "wjirsnzpxy-caseinfoid-cc7bc024-eb46-44c7-b5ac-031f509e13ab",
+								"name": "Enrich CVE",
+								"scriptId": "Recorded Future v2|||cve",
 								"sectionItemType": "button",
 								"startCol": 1
 							}

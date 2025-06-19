@@ -459,9 +459,6 @@
 									"collective_insights": {
 										"simple": "",
 										"userMarkedRequired": true
-									},
-									"domain": {
-										"simple": "${incident.alertname}"
 									}
 								},
 								"buttonClass": "primary",

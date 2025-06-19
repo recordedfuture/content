@@ -217,7 +217,6 @@ class Actions:
             raise ValueError("'first_fetch' parameter cannot be bigger than 90 days")
 
         # Validate max_fetch
-        # TODO: should we use 50 as max value?
         max_fetch = str(demisto_params.get("max_fetch", ""))
         if max_fetch.isnumeric():
             max_fetch = int(max_fetch)

@@ -356,14 +356,6 @@
 											"transformers": []
 										}
 									},
-									"comment": {
-										"simple": "",
-										"userMarkedRequired": true
-									},
-									"reopen": {
-										"simple": "",
-										"userMarkedRequired": true
-									},
 									"status": {
 										"simple": "",
 										"userMarkedRequired": true
@@ -378,7 +370,7 @@
 								"id": "459ccb18-1de9-44f9-a9b5-45bcbbe33a61",
 								"index": 1,
 								"listId": "caseinfoid-420689e3-0a83-4200-83c7-768902968fb0",
-								"name": "Update Alert",
+								"name": "Update Alert Status",
 								"scriptId": "RecordedFutureAlerts|||rf-alert-update",
 								"sectionItemType": "button",
 								"startCol": 0
@@ -407,7 +399,7 @@
 								"id": "a8000a6d-dfb5-4c64-ad70-b92ec2c977d7",
 								"index": 2,
 								"listId": "caseinfoid-cc7bc024-eb46-44c7-b5ac-031f509e13ab",
-								"name": "Add Note for Tuning",
+								"name": "Add Note or Comment",
 								"scriptId": "RecordedFutureAlerts|||rf-alert-update",
 								"sectionItemType": "button",
 								"startCol": 0

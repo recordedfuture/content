@@ -53,7 +53,6 @@ configuration:
   section: Collect
 
 - display: Maximum number of incidents per fetch
-  # TODO: should we use 50 as max value?
   additionalinfo: 'The max number of incidents to fetch per run. Cannot be bigger than 50.'
   name: max_fetch
   defaultvalue: "25"

@@ -80,6 +80,7 @@ configuration:
   type: 12
   additionalinfo: 'Rule names to fetch alerts by, separated by semicolon. If empty, all alerts will be fetched.'
   required: false
+  section: Collect
 
 - display: 'Classic Alerts: Statuses to fetch'
   name: classic_alert_statuses

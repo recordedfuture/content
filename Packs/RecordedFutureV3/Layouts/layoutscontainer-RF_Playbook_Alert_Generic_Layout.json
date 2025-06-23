@@ -485,10 +485,12 @@
 										"userMarkedRequired": true
 									}
 								},
+								"buttonClass": "primary",
 								"dropEffect": "move",
 								"endCol": 2,
 								"fieldId": "",
 								"height": 44,
+								"hexColor": null,
 								"id": "059c24e1-6609-4a46-ba26-673fad3b3fa3",
 								"index": 4,
 								"listId": "wjirsnzpxy-caseinfoid-cc7bc024-eb46-44c7-b5ac-031f509e13ab",

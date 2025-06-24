@@ -92,6 +92,7 @@ configuration:
   - Resolved
   - Dismissed
   required: true
+  advanced: true
   section: Collect
 
 
@@ -138,6 +139,7 @@ configuration:
   - Resolved
   - Dismissed
   required: true
+  advanced: true
   section: Collect
 
 

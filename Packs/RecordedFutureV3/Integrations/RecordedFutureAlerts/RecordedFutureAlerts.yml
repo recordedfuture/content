@@ -159,10 +159,6 @@ script:
       description: Fetch alert images.
       arguments:
       outputs:
-        - contextPath: RecordedFuture.attachment
-          description: "Fetch new alert images."
-          type: Unknown
-
     - name: rf-alert-rules
       description: Search for alert rule IDs.
       arguments:
@@ -213,9 +209,6 @@ script:
           type: string
         - contextPath: RecordedFutureAlerts.Alert.status
           description: Status of alert in Recorded Future.
-          type: string
-        - contextPath: RecordedFutureAlerts.Alert.assignee
-          description: Assignee email.
           type: string
         - contextPath: RecordedFutureAlerts.Alert.comment
           description: Note (Classic) or comment (Playbook) that was just applied.

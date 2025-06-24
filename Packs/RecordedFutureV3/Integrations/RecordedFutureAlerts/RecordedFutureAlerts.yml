@@ -267,13 +267,13 @@ script:
           description: Maximum number of alerts to return. Default 10, maximum 50.
           defaultValue: "10"
         - name: order_by
-          description: Field to sort by. created_at or updated_at (default).
+          description: 'Field to sort by. Possible values are: created_at, updated_at. Default value is updated_at.'
           auto: PREDEFINED
           predefined:
             - created_at
             - updated_at
         - name: order_direction
-          description: asc or desc (default desc).
+          description: 'Direction to sort by. Possible values are: asc, desc. Default value is desc.'
           auto: PREDEFINED
           predefined:
             - asc

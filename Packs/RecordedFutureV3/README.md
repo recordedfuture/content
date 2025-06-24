@@ -63,7 +63,7 @@ the [integration README](./Integrations/RecordedFutureAlerts/README.md).
 #### Relevant Incident Types
 
 * RF Classic Alert
-* RF Playbook Alert (generic)
+* RF Playbook Alert
 * RF Domain Abuse Playbook Alert
 * RF Vulnerability Playbook Alert
 * RF Data Leakage on Code Repo Playbook Alert

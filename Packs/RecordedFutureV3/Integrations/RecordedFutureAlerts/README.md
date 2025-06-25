@@ -1,5 +1,8 @@
+# Recorded Future Alerts
+
 Fetch and triage **Recorded Future Classic Alerts** and **Recorded Future Playbook Alerts** directly from Cortex
 XSOAR.  
+
 The integration allows you to:
 
 * Search and fetch alerts from the Recorded Future platform.

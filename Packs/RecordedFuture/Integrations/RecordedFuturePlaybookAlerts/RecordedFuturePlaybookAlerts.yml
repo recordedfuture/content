@@ -11,7 +11,7 @@ category: Data Enrichment & Threat Intelligence
 defaultclassifier: Recorded Future Playbook Alert Classifier
 defaultmapperin: Recorded Future Playbook Alert Mapper
 image:
-description: 'Deprecated. Use "Recorded Future Alerts" from "Recorded Future V3" pack instead.'
+description: 'Deprecated. Use "Recorded Future Alerts" from "Recorded Future" pack instead.'
 configuration:
 - display: API URL (e.g., https://api.recordedfuture.com/gw/xsoar/)
   name: server_url

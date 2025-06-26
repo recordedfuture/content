@@ -17,8 +17,10 @@
         "Recorded Future Intelligence"
     ],
     "tags": ["Alerts", "Threat Intelligence"],
-    "TODO": "which of these to use? https://github.com/demisto/content/blob/master/Config/approved_usecases.json",
-    "useCases": [],
+    "useCases": [
+        "Threat Intelligence Management",
+        "Incident Response"
+    ],
     "keywords": [
         "recorded future",
         "recordedfuture",

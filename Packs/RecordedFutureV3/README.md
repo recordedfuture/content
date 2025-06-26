@@ -1,8 +1,8 @@
-# Recorded Future v3 - Pack Documentation
+# Recorded Future - Pack Documentation
 
 Recorded Future delivers real-time threat intelligence that helps security teams detect, prioritise, and respond to
 threats faster.  
-The **Recorded Future v3** pack focuses on alert-handling and brings both **Recorded Future Classic Alerts** and
+The **Recorded Future** pack focuses on alert-handling and brings both **Recorded Future Classic Alerts** and
 **Recorded Future Playbook Alerts** straight into Cortex XSOAR so you can triage, investigate, and close alerts without
 ever leaving the SOC console.
 

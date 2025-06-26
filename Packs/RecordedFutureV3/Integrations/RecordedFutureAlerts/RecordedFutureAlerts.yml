@@ -1,4 +1,4 @@
-category: Analytics & SIEM
+category: Data Enrichment & Threat Intelligence
 commonfields:
   id: RecordedFutureAlerts
   version: -1

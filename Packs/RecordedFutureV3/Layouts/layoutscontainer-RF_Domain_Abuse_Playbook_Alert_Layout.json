@@ -653,5 +653,6 @@
 	"locked": false,
 	"name": "RF Domain Abuse Playbook Alert Layout",
 	"system": false,
-	"version": -1
+	"version": -1,
+	"fromVersion": "6.0.0"
 }

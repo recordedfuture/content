@@ -8,6 +8,8 @@ ever leaving the SOC console.
 
 > **Heads-up:** This pack replaces the alert-centric capabilities that previously lived in the *Recorded Future
 Intelligence* pack - namely the *Recorded Future v2* and *Recorded Future - Playbook Alerts* integrations.
+>
+> See [Guide: Migrating from Recorded Future Intelligence pack](./ReleaseNotes/1_0_0_migrate_from_recorded_future_intelligence_pack.md) for more details.
 
 ---
 
@@ -100,6 +102,7 @@ Future workspace.
 * Integration command reference and examples - see
   the [Recorded Future Alerts integration README](Integrations/RecordedFutureAlerts/README.md).
 * Recorded Future product documentation - <https://support.recordedfuture.com/hc/en-us>
+* [Guide: migrating from Recorded Future Intelligence pack](./ReleaseNotes/1_0_0_migrate_from_recorded_future_intelligence_pack.md)
 
 ---
 

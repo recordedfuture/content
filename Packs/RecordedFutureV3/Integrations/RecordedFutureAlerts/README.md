@@ -181,10 +181,10 @@ Search for alert rule IDs.
 
 #### Input
 
-| **Argument Name** | **Description**                                                  | **Required** |
-|-------------------|------------------------------------------------------------------|--------------|
-| rule_name         | Rule name to search. Can be a partial name.                      | Optional     | 
-| limit             | Maximum number of rules to return. Default is 10. Default is 10. | Optional     | 
+| **Argument Name** | **Description**                                   | **Required** |
+|-------------------|---------------------------------------------------|--------------|
+| rule_name         | Rule name to search. Can be a partial name.       | Optional     |
+| limit             | Maximum number of rules to return. Default is 10. | Optional     |
 
 #### Context Output
 

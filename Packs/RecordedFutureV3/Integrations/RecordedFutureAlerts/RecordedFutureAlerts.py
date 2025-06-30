@@ -16,7 +16,7 @@ https://github.com/demisto/content/blob/master/Packs/HelloWorld/Integrations/Hel
 
 import concurrent.futures
 import platform
-from typing import Any, Union, Optional, List
+from typing import Any
 
 import urllib3
 import demistomock as demisto
@@ -46,7 +46,7 @@ TIMEOUT_120 = 120
 class Client(BaseClient):
     """Client class to interact with the service API"""
 
-    def _call(self, **kwargs: Any) -> Union[dict, list[CommandResults]]:
+    def _call(self, **kwargs: Any) -> dict | list[CommandResults]:
         try:
             response: dict = self._http_request(**kwargs)
             if not isinstance(response, dict):
@@ -61,9 +61,9 @@ class Client(BaseClient):
                 return [
                     # Take all CommandResults params verbatim from the response, except the `outputs` param,
                     # which is taken from `raw_response.outputs` to minimize payload size
-                    CommandResults(
-                        outputs=result_action.get("raw_response", {}).get("outputs", None), **result_action
-                    ) for result_action in result_actions if isinstance(result_action, dict)
+                    CommandResults(outputs=result_action.get("raw_response", {}).get("outputs", None), **result_action)
+                    for result_action in result_actions
+                    if isinstance(result_action, dict)
                 ]
             elif result_actions:
                 return_error(f"Bad Response, result_actions was present but not a list: {str(response)}")
@@ -89,10 +89,10 @@ class Client(BaseClient):
         self,
         url_suffix: str,
         *,
-        params: Optional[dict] = None,
+        params: dict | None = None,
         timeout: int = 90,
         retries: int = 3,
-    ) -> Union[dict, list[CommandResults]]:
+    ) -> dict | list[CommandResults]:
         return self._call(
             method="GET",
             url_suffix=url_suffix,
@@ -108,7 +108,7 @@ class Client(BaseClient):
         json_data: dict,
         timeout: int = 90,
         retries: int = 3,
-    ) -> Union[dict, list[CommandResults]]:
+    ) -> dict | list[CommandResults]:
         return self._call(
             method="POST",
             url_suffix=url_suffix,
@@ -124,7 +124,7 @@ class Client(BaseClient):
             timeout=60,
         )
 
-    def alert_update(self) -> Union[dict, list[CommandResults]]:
+    def alert_update(self) -> dict | list[CommandResults]:
         """Update alert"""
         return self._post(
             url_suffix="/v3/alert/update",
@@ -132,11 +132,11 @@ class Client(BaseClient):
             timeout=90,
         )
 
-    def alert_search(self) -> Union[dict, list[CommandResults]]:
+    def alert_search(self) -> dict | list[CommandResults]:
         """Search alerts"""
         return self._get(url_suffix="/v3/alert/search", params=demisto.args())
 
-    def alert_rule_search(self) -> Union[dict, list[CommandResults]]:
+    def alert_rule_search(self) -> dict | list[CommandResults]:
         """Search alert rules."""
         return self._get(url_suffix="/v3/alert/rules", params=demisto.args())
 
@@ -152,7 +152,7 @@ class Client(BaseClient):
         alert_type: str,
         alert_id: str,
         image_id: str,
-        alert_subtype: Optional[str],
+        alert_subtype: str | None,
     ) -> bytes:
         """
         Get an image from the v3 alert image endpoint.
@@ -235,11 +235,8 @@ class Actions:
                 if "fail" in error.get("result", {}).get("status", ""):
                     message = error.get("result", {})["message"]
             except Exception:
-                message = (
-                    f"Unknown error. Please verify that the API URL and Token are correctly configured. RAW Error: {err}"
-                )
+                message = f"Unknown error. Please verify that the API URL and Token are correctly configured. RAW Error: {err}"
             raise DemistoException(f"Failed due to - {message}")
-
 
     def fetch_incidents(self) -> None:
         response = self.client.fetch_incidents()
@@ -269,15 +266,15 @@ class Actions:
         demisto.setLastRun(next_query)
         return None
 
-    def alert_search_command(self) -> Union[dict, list[CommandResults]]:
+    def alert_search_command(self) -> dict | list[CommandResults]:
         return self.client.alert_search()
 
     def alert_rule_search_command(
         self,
-    ) -> Union[dict, list[CommandResults]]:
+    ) -> dict | list[CommandResults]:
         return self.client.alert_rule_search()
 
-    def alert_update_command(self) -> Union[dict, list[CommandResults]]:
+    def alert_update_command(self) -> dict | list[CommandResults]:
         return self.client.alert_update()
 
     @staticmethod
@@ -289,8 +286,8 @@ class Actions:
         alert_type: str,
         alert_id: str,
         image_id: str,
-        alert_subtype: Optional[str],
-    ) -> Optional[dict]:
+        alert_subtype: str | None,
+    ) -> dict | None:
         try:
             return_results(f"Trying to fetch {image_id=} ({alert_type=} {alert_subtype=} {alert_id=})")
             image_content = self.client.get_alert_image(
@@ -322,9 +319,7 @@ class Actions:
 
         lookup_result = self.client.alert_lookup(alert_id)
 
-        if isinstance(lookup_result, list) and lookup_result and isinstance(
-            lookup_result[0], CommandResults
-        ):
+        if isinstance(lookup_result, list) and lookup_result and isinstance(lookup_result[0], CommandResults):
             lookup_data = lookup_result[0].outputs
         else:
             return_error("Failed to lookup alert.")

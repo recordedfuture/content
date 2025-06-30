@@ -247,29 +247,3 @@ There are no input arguments for this command.
 |----------|----------|----------------------------------------------|
 | Files    | Unknown  | New images are attached into incident Files. | 
 
----
-
-## Pre-process Rule (Recommended)
-
-When the integration fetches alerts, every status change in Recorded Future is delivered as a separate event.  
-To prevent duplicate incidents in Cortex XSOAR, create the following **Pre-Process Rule** so that incoming alerts update
-the existing incident instead of opening additional ones.
-
-1. Go to **Settings & Info** -> **Settings**
-2. Open **Object Setup**  -> **Pre-Process Rules** section.
-3. Click **New Rule** and give it a descriptive name - for example *Recorded Future Alert Update*.
-4. Under **Conditions for Incoming Incident** add:
-    - **Name** **Includes** `RF`
-5. In the **Action** section select **Link and close**.
-6. In **Link to** choose **newest incident** -> Created within the last: **&lt;appropriate timeframe&gt;** (for example
-   *14 days*).
-7. And for additional condition:
-    - **DbotMirrorId** **Is identical (Incoming Incident) to incoming incident**.
-8. And click **Save** to save the Preprocessing rule.
-9. You should now see the new rule in the list of Preprocessing rules. Make sure the rule is **Enabled**.
-
-![Pre-process Rule](../../../RecordedFutureV3/doc_files/rf_alerts_pre_process_rule.png)
-
-> Although optional, the rule is highly recommended because it ensures that a single incident in XSOAR tracks all
-> updates for a particular Recorded Future Playbook Alert.
-

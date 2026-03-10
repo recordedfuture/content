@@ -1,0 +1,5 @@
+!ip ip="8.8.8.8,1.1.1.1"
+!domain domain="example.com" collective_insights="off"
+!url url="https://example.com/path"
+!file file="44d88612fea8a8f36de82e1278abb02f"
+!cve cve="CVE-2025-0001"

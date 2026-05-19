@@ -1,6 +1,5 @@
 import platform
-from enum import Enum
-from typing import NotRequired, Required, TypedDict
+from typing import Any, NotRequired, Required, TypedDict
 
 import requests  # noqa: F401
 
@@ -17,66 +16,6 @@ __version__ = "1.0.0"
 INVALID_LOOKUP_RESPONSE_MESSAGE = "Invalid lookup response."
 
 
-class XsoarIndicatorClass(str, Enum):
-    IP = "IP"
-    DOMAIN = "Domain"
-    URL = "URL"
-    FILE = "File"
-    CVE = "CVE"
-
-
-class BaseIndicatorConstructorKwargsPayload(TypedDict, total=False):
-    description: str | None
-
-
-class IPIndicatorConstructorKwargsPayload(
-    BaseIndicatorConstructorKwargsPayload, total=False
-):
-    ip: str | None
-
-
-class DomainIndicatorConstructorKwargsPayload(
-    BaseIndicatorConstructorKwargsPayload, total=False
-):
-    domain: str | None
-
-
-class URLIndicatorConstructorKwargsPayload(
-    BaseIndicatorConstructorKwargsPayload, total=False
-):
-    url: str | None
-
-
-class FileIndicatorConstructorKwargsPayload(
-    BaseIndicatorConstructorKwargsPayload, total=False
-):
-    md5: str | None
-    sha1: str | None
-    sha256: str | None
-    sha512: str | None
-
-
-class CVEIndicatorConstructorKwargsPayload(
-    BaseIndicatorConstructorKwargsPayload, total=False
-):
-    id: str | None
-    cvss: float | int | str | None
-    published: str | None
-    modified: str | None
-    cvss_version: str | None
-    cvss_score: float | int | str | None
-    cvss_vector: str | None
-
-
-CommonIndicatorConstructorKwargsPayload = (
-    IPIndicatorConstructorKwargsPayload
-    | DomainIndicatorConstructorKwargsPayload
-    | URLIndicatorConstructorKwargsPayload
-    | FileIndicatorConstructorKwargsPayload
-    | CVEIndicatorConstructorKwargsPayload
-)
-
-
 class DBotScorePayload(TypedDict):
     indicator: Required[str]
     indicator_type: Required[str]
@@ -87,27 +26,41 @@ class DBotScorePayload(TypedDict):
     message: NotRequired[str | None]
 
 
+class IndicatorPayload(TypedDict, total=False):
+    type: Required[str]
+    dbot_score: Required[DBotScorePayload]
+    # IP / Domain / URL
+    ip: str | None
+    domain: str | None
+    url: str | None
+    # File
+    md5: str | None
+    sha1: str | None
+    sha256: str | None
+    sha512: str | None
+    # CVE
+    id: str | None
+    cvss: float | int | str | None
+    published: str | None
+    modified: str | None
+    cvss_version: str | None
+    cvss_score: float | int | str | None
+    cvss_vector: str | None
+    # Shared
+    description: str | None
+
+
 class CommandResultsPayload(TypedDict, total=False):
     outputs_prefix: str
     raw_response: dict[str, Any]
     readable_output: str
     outputs_key_field: str
     ignore_auto_extract: bool
-
-
-class CreateIndicatorActionPayload(TypedDict):
-    common_class: Required[str]
-    constructor_kwargs: Required[CommonIndicatorConstructorKwargsPayload]
-    dbot_score: Required[DBotScorePayload]
-
-
-class LookupResultActionPayload(TypedDict):
-    CommandResults: Required[CommandResultsPayload]
-    create_indicator: NotRequired[CreateIndicatorActionPayload | None]
+    indicator: IndicatorPayload | None
 
 
 class LookupResponsePayload(TypedDict):
-    result_actions: Required[list[LookupResultActionPayload]]
+    result_actions: Required[list[CommandResultsPayload]]
 
 
 class LookupReputationNoResultsError(DemistoException):
@@ -313,13 +266,13 @@ def _build_lookup_payload(
 def _get_lookup_result_actions(
     *,
     raw_response: Any,
-) -> list[LookupResultActionPayload]:
+) -> list[CommandResultsPayload]:
     lookup_response = cast(LookupResponsePayload, raw_response)
     raw_result_actions = lookup_response.get("result_actions", [])
     if not isinstance(raw_result_actions, list):
         raise DemistoException(INVALID_LOOKUP_RESPONSE_MESSAGE)
 
-    return cast(list[LookupResultActionPayload], raw_result_actions)
+    return cast(list[CommandResultsPayload], raw_result_actions)
 
 
 def _drop_none_values(
@@ -350,84 +303,42 @@ def _build_dbot_score_kwargs(
     )
 
 
-def _parse_indicator_class(
-    *,
-    indicator_action_payload: CreateIndicatorActionPayload,
-) -> XsoarIndicatorClass:
-    common_class_value = indicator_action_payload.get("common_class")
-    try:
-        return XsoarIndicatorClass(common_class_value)
-    except ValueError as error:
-        raise DemistoException(INVALID_LOOKUP_RESPONSE_MESSAGE) from error
+_INDICATOR_TYPE_TO_COMMON_CLASS: dict[str, type] = {
+    "ip": Common.IP,
+    "domain": Common.Domain,
+    "url": Common.URL,
+    "file": Common.File,
+    "cve": Common.CVE,
+}
+
+# Fields to exclude when unpacking indicator kwargs into Common.* constructors.
+# "type" is the discriminator; "dbot_score" is passed separately.
+_INDICATOR_EXCLUDED_FIELDS = {"type", "dbot_score"}
 
 
-def _build_ip_indicator_kwargs(
+def _create_indicator(
     *,
-    raw_constructor_kwargs: IPIndicatorConstructorKwargsPayload,
-) -> dict[str, Any]:
-    return _drop_none_values(
-        raw_kwargs={
-            "ip": raw_constructor_kwargs.get("ip"),
-            "description": raw_constructor_kwargs.get("description"),
-        }
+    raw_indicator: IndicatorPayload,
+) -> Common.Indicator:
+    indicator_type = raw_indicator.get("type", "")
+    common_class = _INDICATOR_TYPE_TO_COMMON_CLASS.get(indicator_type)
+    if common_class is None:
+        raise DemistoException(
+            f"{INVALID_LOOKUP_RESPONSE_MESSAGE} Unknown indicator type: {indicator_type!r}"
+        )
+
+    dbot_score = Common.DBotScore(
+        **_build_dbot_score_kwargs(raw_dbot_score=raw_indicator["dbot_score"])
     )
 
-
-def _build_domain_indicator_kwargs(
-    *,
-    raw_constructor_kwargs: DomainIndicatorConstructorKwargsPayload,
-) -> dict[str, Any]:
-    return _drop_none_values(
+    kwargs = _drop_none_values(
         raw_kwargs={
-            "domain": raw_constructor_kwargs.get("domain"),
-            "description": raw_constructor_kwargs.get("description"),
+            k: v
+            for k, v in raw_indicator.items()
+            if k not in _INDICATOR_EXCLUDED_FIELDS
         }
     )
-
-
-def _build_url_indicator_kwargs(
-    *,
-    raw_constructor_kwargs: URLIndicatorConstructorKwargsPayload,
-) -> dict[str, Any]:
-    return _drop_none_values(
-        raw_kwargs={
-            "url": raw_constructor_kwargs.get("url"),
-            "description": raw_constructor_kwargs.get("description"),
-        }
-    )
-
-
-def _build_file_indicator_kwargs(
-    *,
-    raw_constructor_kwargs: FileIndicatorConstructorKwargsPayload,
-) -> dict[str, Any]:
-    return _drop_none_values(
-        raw_kwargs={
-            "md5": raw_constructor_kwargs.get("md5"),
-            "sha1": raw_constructor_kwargs.get("sha1"),
-            "sha256": raw_constructor_kwargs.get("sha256"),
-            "sha512": raw_constructor_kwargs.get("sha512"),
-            "description": raw_constructor_kwargs.get("description"),
-        }
-    )
-
-
-def _build_cve_indicator_kwargs(
-    *,
-    raw_constructor_kwargs: CVEIndicatorConstructorKwargsPayload,
-) -> dict[str, Any]:
-    return _drop_none_values(
-        raw_kwargs={
-            "id": raw_constructor_kwargs.get("id"),
-            "cvss": raw_constructor_kwargs.get("cvss"),
-            "published": raw_constructor_kwargs.get("published"),
-            "modified": raw_constructor_kwargs.get("modified"),
-            "description": raw_constructor_kwargs.get("description"),
-            "cvss_version": raw_constructor_kwargs.get("cvss_version"),
-            "cvss_score": raw_constructor_kwargs.get("cvss_score"),
-            "cvss_vector": raw_constructor_kwargs.get("cvss_vector"),
-        }
-    )
+    return common_class(dbot_score=dbot_score, **kwargs)
 
 
 def _build_command_results_kwargs(
@@ -446,71 +357,6 @@ def _build_command_results_kwargs(
                 "ignore_auto_extract"
             ),
         }
-    )
-
-
-def _create_indicator(
-    *,
-    indicator_action_payload: CreateIndicatorActionPayload,
-) -> Common.Indicator:
-    dbot_score = Common.DBotScore(
-        **_build_dbot_score_kwargs(
-            raw_dbot_score=indicator_action_payload["dbot_score"]
-        )
-    )
-
-    indicator_class = _parse_indicator_class(
-        indicator_action_payload=indicator_action_payload
-    )
-    raw_constructor_kwargs = indicator_action_payload["constructor_kwargs"]
-
-    if indicator_class == XsoarIndicatorClass.IP:
-        constructor_kwargs = _build_ip_indicator_kwargs(
-            raw_constructor_kwargs=cast(
-                IPIndicatorConstructorKwargsPayload,
-                raw_constructor_kwargs,
-            )
-        )
-        return Common.IP(dbot_score=dbot_score, **constructor_kwargs)
-
-    if indicator_class == XsoarIndicatorClass.DOMAIN:
-        constructor_kwargs = _build_domain_indicator_kwargs(
-            raw_constructor_kwargs=cast(
-                DomainIndicatorConstructorKwargsPayload,
-                raw_constructor_kwargs,
-            )
-        )
-        return Common.Domain(dbot_score=dbot_score, **constructor_kwargs)
-
-    if indicator_class == XsoarIndicatorClass.URL:
-        constructor_kwargs = _build_url_indicator_kwargs(
-            raw_constructor_kwargs=cast(
-                URLIndicatorConstructorKwargsPayload,
-                raw_constructor_kwargs,
-            )
-        )
-        return Common.URL(dbot_score=dbot_score, **constructor_kwargs)
-
-    if indicator_class == XsoarIndicatorClass.FILE:
-        constructor_kwargs = _build_file_indicator_kwargs(
-            raw_constructor_kwargs=cast(
-                FileIndicatorConstructorKwargsPayload,
-                raw_constructor_kwargs,
-            )
-        )
-        return Common.File(dbot_score=dbot_score, **constructor_kwargs)
-
-    if indicator_class == XsoarIndicatorClass.CVE:
-        constructor_kwargs = _build_cve_indicator_kwargs(
-            raw_constructor_kwargs=cast(
-                CVEIndicatorConstructorKwargsPayload,
-                raw_constructor_kwargs,
-            )
-        )
-        return Common.CVE(dbot_score=dbot_score, **constructor_kwargs)
-
-    raise DemistoException(
-        f"Unsupported indicator class: {indicator_class.value}"
     )
 
 
@@ -547,20 +393,16 @@ def _process_lookup_response(
     for result_action_payload in _get_lookup_result_actions(
         raw_response=lookup_response
     ):
+        raw_indicator = result_action_payload.get("indicator")
         created_indicator = None
-        create_indicator_payload = result_action_payload.get(
-            "create_indicator"
-        )
-        if create_indicator_payload is not None:
+        if raw_indicator is not None:
             created_indicator = _create_indicator(
-                indicator_action_payload=create_indicator_payload
+                raw_indicator=cast(IndicatorPayload, raw_indicator)
             )
 
         command_results_list.append(
             _build_command_results(
-                command_results_payload=result_action_payload[
-                    "CommandResults"
-                ],
+                command_results_payload=result_action_payload,
                 indicator=created_indicator,
             )
         )

@@ -89,7 +89,6 @@ class DBotScorePayload(TypedDict):
 
 class CommandResultsPayload(TypedDict, total=False):
     outputs_prefix: str
-    outputs: dict[str, Any]
     raw_response: dict[str, Any]
     readable_output: str
     outputs_key_field: str
@@ -435,11 +434,12 @@ def _build_command_results_kwargs(
     *,
     raw_command_results: CommandResultsPayload,
 ) -> dict[str, Any]:
+    raw_response = raw_command_results.get("raw_response", {})
     return _drop_none_values(
         raw_kwargs={
             "outputs_prefix": raw_command_results.get("outputs_prefix"),
-            "outputs": raw_command_results.get("outputs"),
-            "raw_response": raw_command_results.get("raw_response"),
+            "outputs": raw_response.get("outputs"),
+            "raw_response": raw_response,
             "readable_output": raw_command_results.get("readable_output"),
             "outputs_key_field": raw_command_results.get("outputs_key_field"),
             "ignore_auto_extract": raw_command_results.get(

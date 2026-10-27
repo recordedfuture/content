@@ -72,6 +72,11 @@ the [integration README](https://xsoar.pan.dev/docs/reference/integrations/recor
 * RF Data Leakage on Code Repo Playbook Alert
 * RF Facility Risk Playbook Alert
 * RF Third-Party Cyber Playbook Alert
+* RF Code Repository
+* RF Dark Web Brand
+* RF Identity Exposure
+* RF Impersonation
+* RF Malicious Sites
 
 ---
 
@@ -82,6 +87,9 @@ the [integration README](https://xsoar.pan.dev/docs/reference/integrations/recor
 * RF Domain Abuse Playbook Alert Layout
 * RF Vulnerability Playbook Alert Layout
 * RF Facility Risk Playbook Alert Layout
+* RF Alert Default Layout
+* RF Identity Exposure Layout
+* RF Malicious Sites Layout
 
 ---
 

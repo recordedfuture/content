@@ -92,11 +92,8 @@ def test_lookup_command_builds_backend_payload_with_cleaned_calling_context() ->
         lookup_response={
             "result_actions": [
                 {
-                    "CommandResults": {
-                        "outputs": {},
-                        "raw_response": {},
+                    "raw_response": {"outputs": {}},
                         "readable_output": "No records found",
-                    }
                 }
             ]
         }
@@ -174,25 +171,17 @@ def test_process_lookup_response_creates_ip_indicator_from_backend_payload() -> 
         lookup_response={
             "result_actions": [
                 {
-                    "create_indicator": {
-                        "common_class": "IP",
-                        "constructor_kwargs": {
-                            "ip": "8.8.8.8",
-                            "description": "Test description",
-                        },
-                        "dbot_score": {
+                    "indicator": {"type": "ip", "ip": "8.8.8.8",
+                            "description": "Test description", "dbot_score": {
                             "indicator": "8.8.8.8",
                             "indicator_type": "ip",
                             "integration_name": "Recorded Future Intelligence",
                             "score": RecordedFutureIntelligence.Common.DBotScore.SUSPICIOUS,
                             "reliability": "B - Usually reliable",
-                        },
-                    },
-                    "CommandResults": {
-                        "outputs_prefix": "RecordedFuture.IP",
-                        "outputs": {"name": "8.8.8.8"},
-                        "raw_response": {},
-                    },
+                        },},
+                    "outputs_prefix": "RecordedFuture.IP",
+                        
+                        "raw_response": {"outputs": {"name": "8.8.8.8"}},
                 }
             ]
         }
@@ -214,37 +203,29 @@ def test_process_lookup_response_creates_cve_indicator_from_backend_payload() ->
         lookup_response={
             "result_actions": [
                 {
-                    "create_indicator": {
-                        "common_class": "CVE",
-                        "constructor_kwargs": {
-                            "id": "CVE-2025-0001",
+                    "indicator": {"type": "cve", "id": "CVE-2025-0001",
                             "cvss": 9.8,
                             "published": "2025-01-01T00:00:00Z",
                             "modified": "2025-01-02T00:00:00Z",
                             "description": "Remote code execution",
                             "cvss_version": "3.1",
                             "cvss_score": 9.8,
-                            "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-                        },
-                        "dbot_score": {
+                            "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", "dbot_score": {
                             "indicator": "CVE-2025-0001",
                             "indicator_type": "cve",
                             "integration_name": "Recorded Future Intelligence",
                             "score": RecordedFutureIntelligence.Common.DBotScore.BAD,
                             "malicious_description": "Score above 65",
                             "reliability": "B - Usually reliable",
-                        },
-                    },
-                    "CommandResults": {
-                        "outputs_prefix": "RecordedFuture.CVE",
-                        "outputs": {
+                        },},
+                    "outputs_prefix": "RecordedFuture.CVE",
+                        
+                        "raw_response": {"outputs": {
                             "name": "CVE-2025-0001",
                             "portalUrl": "https://app.recordedfuture.com/portal/intelligence-card/vulnerability:CVE-2025-0001/overview?utm_source=xsoar",
-                        },
-                        "raw_response": {},
+                        }},
                         "readable_output": "ok",
                         "outputs_key_field": "name",
-                    },
                 }
             ]
         }
@@ -276,27 +257,18 @@ def test_process_lookup_response_preserves_zero_cve_cvss_values() -> None:
         lookup_response={
             "result_actions": [
                 {
-                    "create_indicator": {
-                        "common_class": "CVE",
-                        "constructor_kwargs": {
-                            "id": "CVE-2025-9999",
+                    "indicator": {"type": "cve", "id": "CVE-2025-9999",
                             "cvss": 0.0,
                             "published": "",
                             "modified": "",
                             "description": "No impact",
-                            "cvss_score": 0.0,
-                        },
-                        "dbot_score": {
+                            "cvss_score": 0.0, "dbot_score": {
                             "indicator": "CVE-2025-9999",
                             "indicator_type": "cve",
                             "integration_name": "Recorded Future Intelligence",
                             "score": RecordedFutureIntelligence.Common.DBotScore.NONE,
-                        },
-                    },
-                    "CommandResults": {
-                        "outputs": {"name": "CVE-2025-9999"},
-                        "raw_response": {},
-                    },
+                        },},
+                    "raw_response": {"outputs": {"name": "CVE-2025-9999"}},
                 }
             ]
         }
@@ -311,6 +283,36 @@ def test_process_lookup_response_preserves_zero_cve_cvss_values() -> None:
     )
 
 
+def test_process_lookup_response_creates_hashless_file_indicator() -> None:
+    command_results = RecordedFutureIntelligence._process_lookup_response(
+        lookup_response={
+            "result_actions": [
+                {
+                    "raw_response": {"outputs": {"name": "0e5e3a6a"}},
+                    "indicator": {
+                        "type": "file",
+                        "dbot_score": {
+                            "indicator": "0e5e3a6a",
+                            "indicator_type": "file",
+                            "integration_name": "Recorded Future Intelligence",
+                            "score": RecordedFutureIntelligence.Common.DBotScore.GOOD,
+                            "message": "No Risk Observed",
+                        },
+                    },
+                }
+            ]
+        }
+    )
+
+    created_indicator = cast(Any, command_results[0].indicator)
+    assert created_indicator.md5 is None
+    assert created_indicator.dbot_score.message == "No Risk Observed"
+    assert (
+        _get_indicator_score(indicator=created_indicator)
+        == RecordedFutureIntelligence.Common.DBotScore.GOOD
+    )
+
+
 def test_process_lookup_response_supports_command_results_only_action() -> (
     None
 ):
@@ -318,11 +320,8 @@ def test_process_lookup_response_supports_command_results_only_action() -> (
         lookup_response={
             "result_actions": [
                 {
-                    "CommandResults": {
-                        "outputs": {},
-                        "raw_response": {},
+                    "raw_response": {"outputs": {}},
                         "readable_output": "No records found",
-                    }
                 }
             ]
         }
@@ -333,103 +332,103 @@ def test_process_lookup_response_supports_command_results_only_action() -> (
     assert command_results[0].indicator is None
 
 
-def test_process_lookup_response_ignores_unknown_backend_fields() -> None:
+_DOMAIN_DBOT_SCORE = {
+    "indicator": "example.com",
+    "indicator_type": "domain",
+    "integration_name": "Recorded Future Intelligence",
+    "score": RecordedFutureIntelligence.Common.DBotScore.BAD,
+}
+
+
+def test_process_lookup_response_ignores_fields_unknown_to_this_pack_version() -> (
+    None
+):
     command_results = RecordedFutureIntelligence._process_lookup_response(
         lookup_response={
             "result_actions": [
                 {
-                    "create_indicator": {
-                        "common_class": "Domain",
-                        "constructor_kwargs": {
-                            "domain": "example.com",
-                            "description": "Test description",
-                            "relationships": [
-                                {
-                                    "name": "related-to",
-                                    "entityA": "example.com",
-                                    "entityAType": "Domain",
-                                    "entityB": "1.1.1.1",
-                                    "entityBType": "IP",
-                                }
-                            ],
-                            "extra_constructor_field": "ignored",
-                        },
-                        "dbot_score": {
-                            "indicator": "example.com",
-                            "indicator_type": "domain",
-                            "integration_name": "Recorded Future Intelligence",
-                            "score": RecordedFutureIntelligence.Common.DBotScore.BAD,
-                            "extra_score_field": "ignored",
-                        },
-                        "extra_create_indicator_field": True,
+                    "raw_response": {"outputs": {"name": "example.com"}},
+                    "future_field": True,
+                    "indicator": {
+                        "type": "domain",
+                        "domain": "example.com",
+                        "future_field": True,
+                        "dbot_score": {**_DOMAIN_DBOT_SCORE, "future_field": True},
                     },
-                    "CommandResults": {
-                        "outputs": {"name": "example.com"},
-                        "raw_response": {},
-                        "relationships": [
-                            {
-                                "name": "related-to",
-                                "entityA": "example.com",
-                                "entityAType": "Domain",
-                                "entityB": "1.1.1.1",
-                                "entityBType": "IP",
-                            }
-                        ],
-                        "extra_command_results_field": "ignored",
-                    },
-                    "extra_action_field": {"ignored": True},
                 }
             ],
-            "extra_response_field": {"ignored": True},
+            "future_field": True,
         }
     )
 
     created_indicator = cast(Any, command_results[0].indicator)
     assert created_indicator.domain == "example.com"
-    assert created_indicator.description == "Test description"
-    assert created_indicator.relationships is None
     assert (
         _get_indicator_score(indicator=created_indicator)
         == RecordedFutureIntelligence.Common.DBotScore.BAD
     )
-    assert command_results[0].outputs == {"name": "example.com"}
-    assert command_results[0].relationships is None
 
 
-def test_process_lookup_response_raises_for_unsupported_indicator_class() -> (
+def test_process_lookup_response_passes_plain_command_results_fields_through() -> (
     None
 ):
-    with pytest.raises(RecordedFutureIntelligence.DemistoException):
+    command_results = RecordedFutureIntelligence._process_lookup_response(
+        lookup_response={
+            "result_actions": [
+                {
+                    "raw_response": {"outputs": {"name": "example.com"}},
+                    "outputs_prefix": "RecordedFuture.Domain",
+                    "tags": ["recorded-future"],
+                    "mark_as_note": True,
+                    "relationships": [{"name": "related-to"}],
+                }
+            ]
+        }
+    )
+
+    command_result = command_results[0]
+    assert command_result.outputs == {"name": "example.com"}
+    assert command_result.tags == ["recorded-future"]
+    assert command_result.mark_as_note is True
+    # Arguments that need XSOAR objects are not passed raw.
+    assert not command_result.relationships
+
+
+def test_process_lookup_response_skips_indicator_of_unsupported_type() -> None:
+    command_results = RecordedFutureIntelligence._process_lookup_response(
+        lookup_response={
+            "result_actions": [
+                {
+                    "raw_response": {"outputs": {}},
+                    "indicator": {
+                        "type": "vulnerability",
+                        "dbot_score": _DOMAIN_DBOT_SCORE,
+                    },
+                }
+            ]
+        }
+    )
+
+    assert len(command_results) == 1
+    assert command_results[0].indicator is None
+
+
+def test_process_lookup_response_raises_readable_error_for_broken_indicator() -> (
+    None
+):
+    with pytest.raises(
+        RecordedFutureIntelligence.DemistoException,
+        match="Invalid domain indicator",
+    ):
         RecordedFutureIntelligence._process_lookup_response(
             lookup_response={
                 "result_actions": [
                     {
-                        "create_indicator": {
-                            "common_class": "Vulnerability",
-                            "constructor_kwargs": {},
-                            "dbot_score": {
-                                "indicator": "CVE-2025-0001",
-                                "indicator_type": "cve",
-                                "integration_name": "Recorded Future Intelligence",
-                                "score": RecordedFutureIntelligence.Common.DBotScore.BAD,
-                            },
-                        },
-                        "CommandResults": {
-                            "outputs": {},
-                            "raw_response": {},
-                        },
+                        "raw_response": {"outputs": {}},
+                        "indicator": {"type": "domain", "domain": "example.com"},
                     }
                 ]
             }
-        )
-
-
-def test_process_lookup_response_raises_when_result_actions_is_not_a_list() -> (
-    None
-):
-    with pytest.raises(RecordedFutureIntelligence.DemistoException):
-        RecordedFutureIntelligence._process_lookup_response(
-            lookup_response={"result_actions": {"unexpected": True}}
         )
 
 

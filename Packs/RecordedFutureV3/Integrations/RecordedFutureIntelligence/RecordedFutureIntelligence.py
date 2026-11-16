@@ -1,5 +1,6 @@
+import inspect
 import platform
-from typing import Any, NotRequired, Required, TypedDict
+from typing import Any
 
 import requests  # noqa: F401
 
@@ -14,53 +15,6 @@ LOOKUP_REPUTATION_PATH = "/v3/lookup/reputation"
 
 __version__ = "1.0.0"
 INVALID_LOOKUP_RESPONSE_MESSAGE = "Invalid lookup response."
-
-
-class DBotScorePayload(TypedDict):
-    indicator: Required[str]
-    indicator_type: Required[str]
-    integration_name: Required[str]
-    score: Required[int]
-    malicious_description: NotRequired[str | None]
-    reliability: NotRequired[str | None]
-    message: NotRequired[str | None]
-
-
-class IndicatorPayload(TypedDict, total=False):
-    type: Required[str]
-    dbot_score: Required[DBotScorePayload]
-    # IP / Domain / URL
-    ip: str | None
-    domain: str | None
-    url: str | None
-    # File
-    md5: str | None
-    sha1: str | None
-    sha256: str | None
-    sha512: str | None
-    # CVE
-    id: str | None
-    cvss: float | int | str | None
-    published: str | None
-    modified: str | None
-    cvss_version: str | None
-    cvss_score: float | int | str | None
-    cvss_vector: str | None
-    # Shared
-    description: str | None
-
-
-class CommandResultsPayload(TypedDict, total=False):
-    outputs_prefix: str
-    raw_response: dict[str, Any]
-    readable_output: str
-    outputs_key_field: str
-    ignore_auto_extract: bool
-    indicator: IndicatorPayload | None
-
-
-class LookupResponsePayload(TypedDict):
-    result_actions: Required[list[CommandResultsPayload]]
 
 
 class LookupReputationNoResultsError(DemistoException):
@@ -263,18 +217,6 @@ def _build_lookup_payload(
 # ---------------------------------------------------------------------------
 
 
-def _get_lookup_result_actions(
-    *,
-    raw_response: Any,
-) -> list[CommandResultsPayload]:
-    lookup_response = cast(LookupResponsePayload, raw_response)
-    raw_result_actions = lookup_response.get("result_actions", [])
-    if not isinstance(raw_result_actions, list):
-        raise DemistoException(INVALID_LOOKUP_RESPONSE_MESSAGE)
-
-    return cast(list[CommandResultsPayload], raw_result_actions)
-
-
 def _drop_none_values(
     *,
     raw_kwargs: dict[str, Any],
@@ -282,25 +224,6 @@ def _drop_none_values(
     return {
         key: value for key, value in raw_kwargs.items() if value is not None
     }
-
-
-def _build_dbot_score_kwargs(
-    *,
-    raw_dbot_score: DBotScorePayload,
-) -> dict[str, Any]:
-    return _drop_none_values(
-        raw_kwargs={
-            "indicator": raw_dbot_score["indicator"],
-            "indicator_type": raw_dbot_score["indicator_type"],
-            "integration_name": raw_dbot_score["integration_name"],
-            "score": raw_dbot_score["score"],
-            "malicious_description": raw_dbot_score.get(
-                "malicious_description"
-            ),
-            "reliability": raw_dbot_score.get("reliability"),
-            "message": raw_dbot_score.get("message"),
-        }
-    )
 
 
 _INDICATOR_TYPE_TO_COMMON_CLASS: dict[str, type] = {
@@ -311,67 +234,93 @@ _INDICATOR_TYPE_TO_COMMON_CLASS: dict[str, type] = {
     "cve": Common.CVE,
 }
 
-# Fields to exclude when unpacking indicator kwargs into Common.* constructors.
-# "type" is the discriminator; "dbot_score" is passed separately.
-_INDICATOR_EXCLUDED_FIELDS = {"type", "dbot_score"}
+
+# CommandResults arguments that take XSOAR objects rather than plain JSON;
+# each needs its own builder (see _create_indicator) before it can be passed on.
+_OBJECT_COMMAND_RESULTS_ARGS = frozenset(
+    {
+        "indicator",
+        "indicators",
+        "indicators_timeline",
+        "relationships",
+        "scheduled_command",
+        "execution_metrics",
+    }
+)
+
+
+def _accepted_kwargs(
+    *,
+    target_class: type,
+    payload: dict[str, Any],
+    exclude: frozenset[str] = frozenset(),
+) -> dict[str, Any]:
+    """Keep only the payload fields the constructor accepts.
+
+    The backend owns the response format; ignoring fields this pack version
+    (or the server's CommonServerPython) doesn't know keeps older packs
+    working when the backend adds fields.
+    """
+    accepted = inspect.signature(target_class.__init__).parameters
+    return _drop_none_values(
+        raw_kwargs={
+            key: value
+            for key, value in payload.items()
+            if key in accepted and key != "self" and key not in exclude
+        }
+    )
 
 
 def _create_indicator(
     *,
-    raw_indicator: IndicatorPayload,
-) -> Common.Indicator:
-    indicator_type = raw_indicator.get("type", "")
-    common_class = _INDICATOR_TYPE_TO_COMMON_CLASS.get(indicator_type)
+    raw_indicator: dict[str, Any],
+) -> Common.Indicator | None:
+    indicator_type = raw_indicator.get("type")
+    common_class = _INDICATOR_TYPE_TO_COMMON_CLASS.get(str(indicator_type))
     if common_class is None:
-        raise DemistoException(
-            f"{INVALID_LOOKUP_RESPONSE_MESSAGE} Unknown indicator type: {indicator_type!r}"
+        demisto.debug(f"Ignoring unsupported indicator type: {indicator_type!r}")
+        return None
+
+    try:
+        dbot_score = Common.DBotScore(
+            **_accepted_kwargs(
+                target_class=Common.DBotScore,
+                payload=raw_indicator["dbot_score"],
+            )
         )
-
-    dbot_score = Common.DBotScore(
-        **_build_dbot_score_kwargs(raw_dbot_score=raw_indicator["dbot_score"])
-    )
-
-    kwargs = _drop_none_values(
-        raw_kwargs={
-            k: v
-            for k, v in raw_indicator.items()
-            if k not in _INDICATOR_EXCLUDED_FIELDS
-        }
-    )
-    return common_class(dbot_score=dbot_score, **kwargs)
-
-
-def _build_command_results_kwargs(
-    *,
-    raw_command_results: CommandResultsPayload,
-) -> dict[str, Any]:
-    raw_response = raw_command_results.get("raw_response", {})
-    return _drop_none_values(
-        raw_kwargs={
-            "outputs_prefix": raw_command_results.get("outputs_prefix"),
-            "outputs": raw_response.get("outputs"),
-            "raw_response": raw_response,
-            "readable_output": raw_command_results.get("readable_output"),
-            "outputs_key_field": raw_command_results.get("outputs_key_field"),
-            "ignore_auto_extract": raw_command_results.get(
-                "ignore_auto_extract"
+        return common_class(
+            dbot_score=dbot_score,
+            **_accepted_kwargs(
+                target_class=common_class,
+                payload=raw_indicator,
+                exclude=frozenset({"dbot_score"}),
             ),
-        }
-    )
+        )
+    except (KeyError, TypeError, ValueError) as err:
+        raise DemistoException(
+            f"{INVALID_LOOKUP_RESPONSE_MESSAGE} Invalid {indicator_type} indicator: "
+            f"{err}"
+        ) from err
 
 
 def _build_command_results(
     *,
-    command_results_payload: CommandResultsPayload,
+    result_action: dict[str, Any],
     indicator: Common.Indicator | None,
 ) -> CommandResults:
-    command_results_kwargs = _build_command_results_kwargs(
-        raw_command_results=command_results_payload
+    raw_response = result_action.get("raw_response") or {}
+    kwargs = _accepted_kwargs(
+        target_class=CommandResults,
+        payload=result_action,
+        exclude=_OBJECT_COMMAND_RESULTS_ARGS,
     )
+    # Outputs are sent once, inside raw_response, to avoid duplicating them
+    # (same convention as the Recorded Future Alerts integration).
+    if isinstance(raw_response, dict) and "outputs" in raw_response:
+        kwargs.setdefault("outputs", raw_response["outputs"])
     if indicator is not None:
-        command_results_kwargs["indicator"] = indicator
-
-    return CommandResults(**command_results_kwargs)
+        kwargs["indicator"] = indicator
+    return CommandResults(**kwargs)
 
 
 def _build_no_results_command_result() -> CommandResults:
@@ -389,24 +338,18 @@ def _process_lookup_response(
     lookup_response: dict[str, Any],
 ) -> list[CommandResults]:
     command_results_list: list[CommandResults] = []
-
-    for result_action_payload in _get_lookup_result_actions(
-        raw_response=lookup_response
-    ):
-        raw_indicator = result_action_payload.get("indicator")
-        created_indicator = None
-        if raw_indicator is not None:
-            created_indicator = _create_indicator(
-                raw_indicator=cast(IndicatorPayload, raw_indicator)
-            )
-
+    for result_action in lookup_response.get("result_actions") or []:
+        raw_indicator = result_action.get("indicator")
         command_results_list.append(
             _build_command_results(
-                command_results_payload=result_action_payload,
-                indicator=created_indicator,
+                result_action=result_action,
+                indicator=(
+                    _create_indicator(raw_indicator=raw_indicator)
+                    if raw_indicator
+                    else None
+                ),
             )
         )
-
     return command_results_list
 
 

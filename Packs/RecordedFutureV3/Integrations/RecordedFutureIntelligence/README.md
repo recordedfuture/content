@@ -49,6 +49,7 @@ All lookup commands return the following DBot score fields:
 | DBotScore.Vendor | string | The vendor used to calculate the score. |
 | DBotScore.Score | number | The actual score. |
 | DBotScore.Reliability | string | Reliability of the source providing the intelligence data. |
+| DBotScore.Message | string | The reason for the score, e.g., "Score above 65" or "No Risk Observed". |
 
 ### ip
 
